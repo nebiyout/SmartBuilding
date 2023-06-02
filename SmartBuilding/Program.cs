@@ -41,12 +41,12 @@ async void SetupBuilding()
         throw new NullReferenceException("No available elevator.");
 
     var callerFloor = floors[33]; //30
-    var callerMove = MoveDirection.Down;
+    var callerMove = MovementDirection.Down;
     var selectedElevator = await CallElevatorAsync(elevators, callerFloor, callerMove);
     await QueuePassengerAsync(selectedElevator, callerFloor, callerMove);
 
     var callerFloor1 = floors[10]; //7
-    var callerMove1 = MoveDirection.Down;
+    var callerMove1 = MovementDirection.Down;
     var selectedElevator1 = await CallElevatorAsync(elevators, callerFloor1, callerMove1);
     await QueuePassengerAsync(selectedElevator1, callerFloor1, callerMove1);
 
@@ -68,13 +68,13 @@ async void SetupBuilding()
     Console.ReadLine();
 }
 
-async Task<IElevator> CallElevatorAsync(IEnumerable<IElevator> elevators, IFloor callerFloor, MoveDirection callerMove)
+async Task<IElevator> CallElevatorAsync(IEnumerable<IElevator> elevators, IFloor callerFloor, MovementDirection callerMove)
 {
     var callOperation = new CallOperation(elevators, callerFloor, callerMove);
     return await callOperation.ExecuteAsync();
 }
 
-async Task QueuePassengerAsync(IElevator elevator, IFloor callerFloor, MoveDirection callerMove)
+async Task QueuePassengerAsync(IElevator elevator, IFloor callerFloor, MovementDirection callerMove)
 {
     var passengers = new List<IElevatorPassenger>();
     var passenger = new ElevatorPassenger(elevator, callerFloor, null, callerMove);

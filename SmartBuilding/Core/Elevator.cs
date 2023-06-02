@@ -17,11 +17,11 @@ namespace SmartBuilding.Core
             ItemId = itemId;
             CurrentFloor = currentFloor;
             MaxPassengerLimit = maxPassengerLimit;
-            Direction = MoveDirection.Idle;
+            Direction = MovementDirection.Idle;
             Passengers = new List<IElevatorPassenger>();
         }
 
-        public Elevator(string itemId, IFloor currentFloor, int maxPassengerLimit, MoveDirection direction) : 
+        public Elevator(string itemId, IFloor currentFloor, int maxPassengerLimit, MovementDirection direction) : 
             this(itemId, currentFloor, maxPassengerLimit)
         {
             Direction = direction;
@@ -29,7 +29,7 @@ namespace SmartBuilding.Core
 
         public string ItemId { get; set; }
 
-        public MoveDirection Direction { get; set; } //changes during move, load and unload operations
+        public MovementDirection Direction { get; set; } //changes during move, load and unload operations
 
         public int MaxPassengerLimit { get; set; } //changes during load and unload operation
 
@@ -44,15 +44,15 @@ namespace SmartBuilding.Core
         public void SetElevatorStatus(int minFloor, int maxFloor)
         {
             if (CurrentFloor.FloorNo == minFloor)
-                Direction = MoveDirection.Up;
+                Direction = MovementDirection.Up;
 
             else if (CurrentFloor.FloorNo == maxFloor)
-                Direction = MoveDirection.Down;
+                Direction = MovementDirection.Down;
         }
 
         public void ResetStatus()
         {
-            Direction = MoveDirection.Idle;
+            Direction = MovementDirection.Idle;
         }
     }
 }

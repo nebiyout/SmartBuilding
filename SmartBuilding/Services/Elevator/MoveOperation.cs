@@ -46,7 +46,7 @@ namespace SmartBuilding.Services.Elevator
 
                 InitiateElevatorStatus();
 
-                if (elevator.Direction == MoveDirection.Up)
+                if (elevator.Direction == MovementDirection.Up)
                 {
                     int callersMax = await GetCallerMaxValueAsync();
                     int passengersMax = await GetPassengerMaxValueAsync();
@@ -65,9 +65,9 @@ namespace SmartBuilding.Services.Elevator
 
                         startJobIndex++;
                     }
-                    elevator.Direction = MoveDirection.Down;
+                    elevator.Direction = MovementDirection.Down;
                 }
-                else if (elevator.Direction == MoveDirection.Down)
+                else if (elevator.Direction == MovementDirection.Down)
                 {
                     int callersMin = await GetCallerMinValueAsync();
                     int passengersMin = await GetPassengerMinValueAsync();
@@ -86,7 +86,7 @@ namespace SmartBuilding.Services.Elevator
 
                         startJobIndex--;
                     }
-                    elevator.Direction = MoveDirection.Up;
+                    elevator.Direction = MovementDirection.Up;
                 }
             }
 
@@ -162,15 +162,15 @@ namespace SmartBuilding.Services.Elevator
 
         private void InitiateElevatorStatus()
         {
-            if (elevator.Direction == MoveDirection.Idle && elevator.Passengers.Any())
+            if (elevator.Direction == MovementDirection.Idle && elevator.Passengers.Any())
             {
                 var upperPassangers = elevator.Passengers
                     .Where(i => i.FromFloor.FloorNo > elevator.CurrentFloor.FloorNo);
 
                 if (upperPassangers.Any())
-                    elevator.Direction = MoveDirection.Up;
+                    elevator.Direction = MovementDirection.Up;
                 else
-                    elevator.Direction = MoveDirection.Down;
+                    elevator.Direction = MovementDirection.Down;
             }
         }
     }

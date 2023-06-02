@@ -12,7 +12,7 @@ namespace SmartBuilding.Core
     {
         public string ElevatorName { get; set; }
 
-        public MoveDirection Direction { get; set; }
+        public MovementDirection Direction { get; set; }
 
         public IFloor CurrentFloor { get; set; } 
 

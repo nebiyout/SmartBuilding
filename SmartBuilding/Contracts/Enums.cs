@@ -1,6 +1,6 @@
 ﻿namespace SmartBuilding.Contracts
 {
-    public enum MoveDirection
+    public enum MovementDirection
     {
         Idle,
         Up,
