@@ -29,8 +29,10 @@ async void SetupBuilding()
     IList<IFloor> floors = BuildingHelper.SetupBuildingFloors(3, 35);
     buildingProcessor.AddRange<IFloor>(floors);
 
-    buildingProcessor.Add<IElevator>(new Elevator("E01", floors[0], 500)); //-3
-    buildingProcessor.Add<IElevator>(new Elevator("E02", floors[30], 500));//27
+    buildingProcessor.Add<IElevator>(new Elevator("E01", floors[0], 7, MovementDirection.Up)); //-3
+    buildingProcessor.Add<IElevator>(new Elevator("E02", floors[17], 9, MovementDirection.Idle));//14
+    buildingProcessor.Add<IElevator>(new Elevator("E03", floors[38], 12, MovementDirection.Down));//35
+    buildingProcessor.Add<IElevator>(new Elevator("E04", floors[23], 4, MovementDirection.Up));//20
 
     IEnumerable<IElevator> elevators = buildingProcessor.GetAvailableItems<IElevator>();
 
@@ -45,13 +47,13 @@ async void SetupBuilding()
     var selectedElevator = await CallElevatorAsync(elevators, callerFloor, callerMove);
     await QueuePassengerAsync(selectedElevator, callerFloor, callerMove);
 
-    var callerFloor1 = floors[10]; //7
-    var callerMove1 = MovementDirection.Down;
-    var selectedElevator1 = await CallElevatorAsync(elevators, callerFloor1, callerMove1);
-    await QueuePassengerAsync(selectedElevator1, callerFloor1, callerMove1);
+    //var callerFloor1 = floors[10]; //7
+    //var callerMove1 = MoveType.Down;
+    //var selectedElevator1 = await CallElevatorAsync(elevators, callerFloor1, callerMove1);
+    //await QueuePassengerAsync(selectedElevator1, callerFloor1, callerMove1);
 
     await new MoveOperation(selectedElevator, observable).ExecuteAsync();
-    await new MoveOperation(selectedElevator1, observable).ExecuteAsync();
+    // await new MoveOperation(selectedElevator1, observable).ExecuteAsync();
 
     selectedElevator.Passengers[0].Waiting = false;
     selectedElevator.Passengers[0].ToFloor = floors[3]; //0
@@ -60,10 +62,10 @@ async void SetupBuilding()
     //selectedElevator.Passengers[1].ToFloor = floors[0];//-3
 
     //selectedElevator1.Passengers[0].Waiting = false;
-   // selectedElevator1.Passengers[0].ToFloor = floors[0];//-3
+    // selectedElevator1.Passengers[0].ToFloor = floors[0];//-3
 
     await new MoveOperation(selectedElevator, observable).ExecuteAsync();
-   // await new MoveOperation(selectedElevator1, observable).ExecuteAsync();
+    // await new MoveOperation(selectedElevator1, observable).ExecuteAsync();
 
     Console.ReadLine();
 }
