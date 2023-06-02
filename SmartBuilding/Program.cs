@@ -7,6 +7,8 @@ using SmartBuilding.Services.Elevator;
 using SmartBuilding.Utils;
 using SmartBuilding.Utils.PubSub;
 using System;
+using SmartBuilding.Core.Dto;
+using SmartBuilding.Services.Elevator.Notification;
 
 Console.WriteLine("======================================================================");
 Console.WriteLine("                   Welcome to, Smart Builing!                         ");
@@ -17,10 +19,11 @@ SetupBuilding();
 
 async void SetupBuilding()
 {
-    Observable<ElevatorMovement> observable = new Observable<ElevatorMovement>();
+    Observable<ElevatorUpdateDto> observable = new Observable<ElevatorUpdateDto>();
 
     // Subscribe an observer
-    var observer = new MovementNotifier();
+    var observer = new MovementNotification();
+    var observer1 = new LoadingNotification();
     var subscription = observable.Subscribe(observer);
 
     IBuilding building = BuildingHelper.SetUpBuiling("Plaza Hotel");
@@ -29,10 +32,10 @@ async void SetupBuilding()
     IList<IFloor> floors = BuildingHelper.SetupBuildingFloors(3, 35);
     buildingProcessor.AddRange<IFloor>(floors);
 
-    buildingProcessor.Add<IElevator>(new Elevator("E01", floors[0], 7, MovementDirection.Up)); //-3
+    buildingProcessor.Add<IElevator>(new Elevator("E01", floors[8], 7, MovementDirection.Down)); //5
     buildingProcessor.Add<IElevator>(new Elevator("E02", floors[17], 9, MovementDirection.Idle));//14
-    buildingProcessor.Add<IElevator>(new Elevator("E03", floors[38], 12, MovementDirection.Down));//35
-    buildingProcessor.Add<IElevator>(new Elevator("E04", floors[23], 4, MovementDirection.Up));//20
+    //buildingProcessor.Add<IElevator>(new Elevator("E03", floors[38], 12, MovementDirection.Down));//35
+    //buildingProcessor.Add<IElevator>(new Elevator("E04", floors[23], 4, MovementDirection.Up));//20
 
     IEnumerable<IElevator> elevators = buildingProcessor.GetAvailableItems<IElevator>();
 
@@ -42,38 +45,41 @@ async void SetupBuilding()
     if (!elevators.Any())
         throw new NullReferenceException("No available elevator.");
 
-    var callerFloor = floors[33]; //30
-    var callerMove = MovementDirection.Down;
-    var selectedElevator = await CallElevatorAsync(elevators, callerFloor, callerMove);
-    await QueuePassengerAsync(selectedElevator, callerFloor, callerMove);
+    List<CallOperation> callRequests = new List<CallOperation>();
 
-    //var callerFloor1 = floors[10]; //7
-    //var callerMove1 = MoveType.Down;
-    //var selectedElevator1 = await CallElevatorAsync(elevators, callerFloor1, callerMove1);
-    //await QueuePassengerAsync(selectedElevator1, callerFloor1, callerMove1);
+    callRequests.Add(new CallOperation(elevators, floors[33], MovementDirection.Down));//30
+    callRequests.Add(new CallOperation(elevators, floors[7], MovementDirection.Down));//4
+    callRequests.Add(new CallOperation(elevators, floors[2], MovementDirection.Down));//-1
+    callRequests.Add(new CallOperation(elevators, floors[14], MovementDirection.Down));//11
 
-    await new MoveOperation(selectedElevator, observable).ExecuteAsync();
-    // await new MoveOperation(selectedElevator1, observable).ExecuteAsync();
+    var groupedCalls = callRequests
+        .GroupBy(i => i.CallerDirection)
+        .Select(i => new
+        {
+            Direction = i.Key,
+            Callers = i.Select(i => i).ToList()
+        }).ToList();
 
-    selectedElevator.Passengers[0].Waiting = false;
-    selectedElevator.Passengers[0].ToFloor = floors[3]; //0
+    List<IElevator> selectedElevators = new List<IElevator>();
 
-    //selectedElevator.Passengers[1].Waiting = false;
-    //selectedElevator.Passengers[1].ToFloor = floors[0];//-3
+    groupedCalls.ForEach(groupedCall =>
+    {
+        groupedCall.Callers.ForEach(async call =>
+        {
+            IElevator selectedElevator = await call.ExecuteAsync();
+            await QueuePassengerAsync(selectedElevator, call.CallerFloor, groupedCall.Direction);
 
-    //selectedElevator1.Passengers[0].Waiting = false;
-    // selectedElevator1.Passengers[0].ToFloor = floors[0];//-3
+            if (!selectedElevators.Any(i => i.ItemId == selectedElevator.ItemId))
+                selectedElevators.Add(selectedElevator);
+        });
+    });
 
-    await new MoveOperation(selectedElevator, observable).ExecuteAsync();
-    // await new MoveOperation(selectedElevator1, observable).ExecuteAsync();
+    selectedElevators.ForEach(async elevator =>
+    {
+        await new MoveOperation(elevator).ExecuteAsync();
+    });
 
     Console.ReadLine();
-}
-
-async Task<IElevator> CallElevatorAsync(IEnumerable<IElevator> elevators, IFloor callerFloor, MovementDirection callerMove)
-{
-    var callOperation = new CallOperation(elevators, callerFloor, callerMove);
-    return await callOperation.ExecuteAsync();
 }
 
 async Task QueuePassengerAsync(IElevator elevator, IFloor callerFloor, MovementDirection callerMove)

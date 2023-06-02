@@ -10,6 +10,8 @@ namespace SmartBuilding.Utils.PubSub
     {
         private List<IObserver<T>> observers = new List<IObserver<T>>();
 
+        public List<IObserver<T>> Observers => observers;
+
         public IDisposable Subscribe(IObserver<T> observer)
         {
             if (!observers.Contains(observer))

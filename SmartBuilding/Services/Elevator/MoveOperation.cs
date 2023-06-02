@@ -1,7 +1,8 @@
 ﻿using SmartBuilding.Contracts;
 using SmartBuilding.Contracts.Elevator;
 using SmartBuilding.Contracts.Floor;
-using SmartBuilding.Core;
+using SmartBuilding.Core.Dto;
+using SmartBuilding.Services.Elevator.Notification;
 using SmartBuilding.Utils;
 using SmartBuilding.Utils.PubSub;
 using System.Threading.Tasks.Dataflow;
@@ -14,23 +15,19 @@ namespace SmartBuilding.Services.Elevator
         private readonly IEnumerable<IFloor> floors;
         private readonly int minFloor;
         private readonly int maxFloor;
-        private readonly Observable<ElevatorMovement>? observable;
+        private readonly NotificationManager<ElevatorUpdateDto> notificationManager;
 
         public MoveOperation(IElevator elevator)
         {
-            this.elevator = elevator;
-
             floors = BuildingHelper.GetItems<IFloor>();
-
             _ = floors ?? throw new ArgumentNullException(nameof(floors));
+            this.elevator = elevator;
 
             minFloor = floors.Min(i => i.FloorNo);
             maxFloor = floors.Min(i => i.FloorNo);
-        }
 
-        public MoveOperation(IElevator elevator, Observable<ElevatorMovement> observable) : this(elevator) 
-        {
-            this.observable = observable;
+            notificationManager = new NotificationManager<ElevatorUpdateDto>();
+            notificationManager.Subscribe(new MovementNotification());
         }
 
 
@@ -41,7 +38,6 @@ namespace SmartBuilding.Services.Elevator
                 if (elevator.Passengers.All(i => i.Waiting == false) && elevator.Passengers.All(i => i.Waiting == false && i.ToFloor == null))
                 {
                     elevator.ResetStatus();
-                    BroadCast();
                     break;
                 }
 
@@ -66,6 +62,7 @@ namespace SmartBuilding.Services.Elevator
 
                         startJobIndex++;
                     }
+
                     elevator.Direction = MovementDirection.Down;
                 }
                 else if (elevator.Direction == MovementDirection.Down)
@@ -96,13 +93,10 @@ namespace SmartBuilding.Services.Elevator
 
         private void BroadCast()
         {
-            if (observable == null)
-                return;
-
-            observable.Notify(new ElevatorMovement()
+            notificationManager.Notify(new ElevatorUpdateDto()
             {
-                CurrentFloor = elevator.CurrentFloor,
-                Direction = elevator.Direction,
+                FloorNo = elevator.CurrentFloor.FloorNo,
+                Direction = elevator.Direction.ToString(),
                 ElevatorName = elevator.ItemId,
                 OnBoardPassengers = elevator.Passengers.Count(i => i.ToFloor != null || (i.ToFloor == null && i.Waiting == false))
             });
@@ -111,7 +105,7 @@ namespace SmartBuilding.Services.Elevator
         private async Task<int> GetCallerMaxValueAsync()
         {
             int callersMax = int.MinValue;
-            var callers = elevator.Passengers.Where(i => i.ToFloor == null && i.FromFloor.FloorNo >= elevator.CurrentFloor.FloorNo);
+            var callers = elevator.Passengers.Where(i => i.ToFloor == null && i.FromFloor.FloorNo >= elevator.CurrentFloor.FloorNo && i.Waiting == true);
             if (callers.Any())
                 callersMax = callers.Max(i => i.FromFloor.FloorNo);
 
@@ -121,7 +115,7 @@ namespace SmartBuilding.Services.Elevator
         private async Task<int> GetPassengerMaxValueAsync()
         {
             int passengersMax = int.MinValue;
-            var passengers = elevator.Passengers.Where(i => i.ToFloor != null && i.ToFloor.FloorNo >= elevator.CurrentFloor.FloorNo);
+            var passengers = elevator.Passengers.Where(i => i.ToFloor != null && i.ToFloor.FloorNo >= elevator.CurrentFloor.FloorNo && i.Waiting == false);
             if (passengers.Any())
                 passengersMax = passengers.Max(i => i.ToFloor.FloorNo);
 
@@ -131,7 +125,7 @@ namespace SmartBuilding.Services.Elevator
         private async Task<int> GetCallerMinValueAsync()
         {
             int callersMin = int.MaxValue;
-            var callers = elevator.Passengers.Where(i => i.ToFloor == null && i.FromFloor.FloorNo <= elevator.CurrentFloor.FloorNo);
+            var callers = elevator.Passengers.Where(i => i.ToFloor == null && i.FromFloor.FloorNo <= elevator.CurrentFloor.FloorNo && i.Waiting == true);
             if (callers.Any())
                 callersMin = callers.Min(i => i.FromFloor.FloorNo);
 
@@ -141,7 +135,7 @@ namespace SmartBuilding.Services.Elevator
         private async Task<int> GetPassengerMinValueAsync()
         {
             int passengersMin = int.MaxValue;
-            var passengers = elevator.Passengers.Where(i => i.ToFloor != null && i.ToFloor.FloorNo <= elevator.CurrentFloor.FloorNo);
+            var passengers = elevator.Passengers.Where(i => i.ToFloor != null && i.ToFloor.FloorNo <= elevator.CurrentFloor.FloorNo && i.Waiting == false);
             if (passengers.Any())
                 passengersMin = passengers.Min(i => i.ToFloor.FloorNo);
 

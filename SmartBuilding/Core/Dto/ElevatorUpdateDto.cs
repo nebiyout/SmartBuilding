@@ -6,16 +6,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartBuilding.Core
+namespace SmartBuilding.Core.Dto
 {
-    public class ElevatorMovement
+    public class ElevatorUpdateDto
     {
         public string ElevatorName { get; set; }
 
-        public MovementDirection Direction { get; set; }
+        public string Direction { get; set; }
 
-        public IFloor CurrentFloor { get; set; } 
+        public int FloorNo { get; set; }
 
         public int OnBoardPassengers { get; set; }
     }
+
+
 }

@@ -1,15 +1,22 @@
 ﻿using SmartBuilding.Contracts;
 using SmartBuilding.Contracts.Elevator;
+using SmartBuilding.Core.Dto;
+using SmartBuilding.Services.Elevator.Notification;
+using SmartBuilding.Utils.PubSub;
+using System.Threading.Tasks.Dataflow;
 
 namespace SmartBuilding.Services.Elevator
 {
     public class LoadOperation : IOperation<IElevator>
     {
         private readonly IElevator elevator;
+        private readonly NotificationManager<LoadingDto> notificationManager;
 
         public LoadOperation(IElevator elevator)
         {
             this.elevator = elevator;
+            notificationManager = new NotificationManager<LoadingDto>();
+            notificationManager.Subscribe(new LoadingNotification());
         }
 
         public Task<IElevator> ExecuteAsync()
@@ -20,11 +27,26 @@ namespace SmartBuilding.Services.Elevator
                && i.FromFloor.FloorNo == elevator.CurrentFloor.FloorNo
                && elevator.Direction == i.Direction
                && elevator.ItemId == i.CalledElevator.ItemId);
-            
-            foreach (IElevatorPassenger passenger in passengersGotToElevator)
-                passenger.Waiting = false;
 
+            if (passengersGotToElevator.Any())
+            {
+                Broadcast(passengersGotToElevator.Count());
+                foreach (IElevatorPassenger passenger in passengersGotToElevator)
+                    passenger.Waiting = false;
+            }
+            
             return Task.FromResult(elevator);
+        }
+
+        private void Broadcast(int totalPassengers)
+        {
+            notificationManager.Notify(new LoadingDto()
+            {
+                ElevatorName = elevator.ItemId,
+                FloorNo = elevator.CurrentFloor.FloorNo,
+                Operation = "Loading Passengers",
+                OnBoardPassengers = totalPassengers
+            });
         }
     }
 }

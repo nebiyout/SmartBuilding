@@ -9,17 +9,21 @@ namespace SmartBuilding.Services.Elevator
     {
         private readonly IEnumerable<IElevator> elevators;
         private readonly IFloor callerFloor;
-        private readonly MovementDirection callerMove;
+        private readonly MovementDirection callerDirection;
 
-        public CallOperation(IEnumerable<IElevator> elevators, IFloor callerFloor, MovementDirection callerMove)
+        public CallOperation(IEnumerable<IElevator> elevators, IFloor callerFloor, MovementDirection callerDirection)
         {
             _ = elevators ?? throw new ArgumentNullException(nameof(elevators));
             _ = callerFloor ?? throw new ArgumentNullException(nameof(callerFloor));
 
             this.elevators = elevators;
             this.callerFloor = callerFloor;
-            this.callerMove = callerMove;
+            this.callerDirection = callerDirection;
         }
+
+        public IFloor CallerFloor => callerFloor;
+
+        public MovementDirection CallerDirection => callerDirection;
 
         public async Task<IElevator> ExecuteAsync()
         {
@@ -61,7 +65,7 @@ namespace SmartBuilding.Services.Elevator
                 //check if the elevator is going up
                 else if (elevator.Direction == MovementDirection.Up)
                 {
-                    if (callerMove == MovementDirection.Up)
+                    if (callerDirection == MovementDirection.Up)
                     {
                         //check if the elevator is at lower floor than the caller floor.
                         if (elevator.CurrentFloor.FloorNo < callerFloor.FloorNo)
@@ -73,14 +77,14 @@ namespace SmartBuilding.Services.Elevator
                             distance = await GetMinDistance(elevator, callerFloor);
                         }
                     }
-                    else if (callerMove == MovementDirection.Down)
+                    else if (callerDirection == MovementDirection.Down)
                     {
                         distance = await GetMinDistance(elevator, callerFloor);
                     }
                 }
                 else if (elevator.Direction == MovementDirection.Down)
                 {
-                    if (callerMove == MovementDirection.Down)
+                    if (callerDirection == MovementDirection.Down)
                     {
                         //check if the elevator is at lower floor than the caller floor.
                         if (elevator.CurrentFloor.FloorNo < callerFloor.FloorNo)
@@ -92,7 +96,7 @@ namespace SmartBuilding.Services.Elevator
                             distance = Math.Abs(elevator.CurrentFloor.FloorNo - callerFloor.FloorNo);
                         }
                     }
-                    else if (callerMove == MovementDirection.Up)
+                    else if (callerDirection == MovementDirection.Up)
                     {
                         distance = await GetMinDistance(elevator, callerFloor);
                     }
@@ -140,13 +144,13 @@ namespace SmartBuilding.Services.Elevator
 
                 if (elevator.Direction == MovementDirection.Up)
                 {
-                    if (callerMove == MovementDirection.Up)
+                    if (callerDirection == MovementDirection.Up)
                     {
                         minDistance = Math.Abs(last - elevator.CurrentFloor.FloorNo);
                         minDistance += Math.Abs(last - first);
                         minDistance += Math.Abs(callerFloor.FloorNo - first);
                     }
-                    else if (callerMove == MovementDirection.Down)
+                    else if (callerDirection == MovementDirection.Down)
                     {
                         minDistance = Math.Abs(last - elevator.CurrentFloor.FloorNo);
                         minDistance += Math.Abs(last - callerFloor.FloorNo);
@@ -154,13 +158,13 @@ namespace SmartBuilding.Services.Elevator
                 }
                 else if (elevator.Direction == MovementDirection.Down)
                 {
-                    if (callerMove == MovementDirection.Down)
+                    if (callerDirection == MovementDirection.Down)
                     {
                         minDistance = Math.Abs(elevator.CurrentFloor.FloorNo - first);
                         minDistance += Math.Abs(last - first);
                         minDistance += Math.Abs(last - callerFloor.FloorNo);
                     }
-                    else if (callerMove == MovementDirection.Up)
+                    else if (callerDirection == MovementDirection.Up)
                     {
                         minDistance = Math.Abs(elevator.CurrentFloor.FloorNo - first);
                         minDistance += Math.Abs(callerFloor.FloorNo - first);
