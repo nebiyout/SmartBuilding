@@ -5,7 +5,7 @@ VisualStudioVersion = 17.4.33103.184
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartBuilding", "SmartBuilding\SmartBuilding.csproj", "{6E6DC954-7F6D-4AD2-BE40-39C312E310B6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartBuilding.Tests", "SmartBuilding.Tests\SmartBuilding.Tests.csproj", "{DED9C985-3490-40FE-93F4-A0B09FCD082F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartBuilding.Tests", "SmartBuilding.Tests\SmartBuilding.Tests.csproj", "{DED9C985-3490-40FE-93F4-A0B09FCD082F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
