@@ -1,14 +1,16 @@
 ﻿using SmartBuilding.Contracts;
 using SmartBuilding.Contracts.Elevator;
 using SmartBuilding.Contracts.Floor;
+using SmartBuilding.Core;
 
 namespace SmartBuilding.Services.Elevator
 {
-    public class CallOperation<T> : IOperation<IElevator> where T : IElevator
+    public class CallOperation : IOperation<IElevator>
     {
         private readonly IEnumerable<IElevator> elevators;
         private readonly IFloor callerFloor;
         private readonly MoveType callerMove;
+
         public CallOperation(IEnumerable<IElevator> elevators, IFloor callerFloor, MoveType callerMove)
         {
             _ = elevators ?? throw new ArgumentNullException(nameof(elevators));
@@ -17,6 +19,7 @@ namespace SmartBuilding.Services.Elevator
             this.elevators = elevators;
             this.callerFloor = callerFloor;
             this.callerMove = callerMove;
+            
         }
 
         public async Task<IElevator> ExecuteAsync()

@@ -1,7 +1,10 @@
 ﻿using SmartBuilding.Contracts;
 using SmartBuilding.Contracts.Elevator;
 using SmartBuilding.Contracts.Floor;
+using SmartBuilding.Core;
 using SmartBuilding.Utils;
+using SmartBuilding.Utils.PubSub;
+using System.Threading.Tasks.Dataflow;
 
 namespace SmartBuilding.Services.Elevator
 {
@@ -11,10 +14,12 @@ namespace SmartBuilding.Services.Elevator
         private readonly IEnumerable<IFloor> floors;
         private readonly int minFloor;
         private readonly int maxFloor;
+        private readonly Observable<ElevatorMovement>? observable;
 
         public MoveOperation(IElevator elevator)
         {
             this.elevator = elevator;
+
             floors = BuildingHelper.GetItems<IFloor>();
 
             _ = floors ?? throw new ArgumentNullException(nameof(floors));
@@ -22,6 +27,12 @@ namespace SmartBuilding.Services.Elevator
             minFloor = floors.Min(i => i.FloorNo);
             maxFloor = floors.Min(i => i.FloorNo);
         }
+
+        public MoveOperation(IElevator elevator, Observable<ElevatorMovement> observable) : this(elevator) 
+        {
+            this.observable = observable;
+        }
+
 
         public async Task<IElevator> ExecuteAsync()
         {
@@ -42,23 +53,18 @@ namespace SmartBuilding.Services.Elevator
 
                     int maxJobIndex = Math.Max(callersMax, passengersMax);
                     int startJobIndex = elevator.CurrentFloor.FloorNo;
-                    Console.WriteLine("----------------------UP START--------------------");
                     while (startJobIndex <= maxJobIndex)
                     {
                         OffLoadPassengers();
                         LoadPassengers();
+                        BroadCast();
 
                         var nextFloor = floors.FirstOrDefault(i => i.FloorNo == startJobIndex + 1);
                         if (nextFloor != null && startJobIndex + 1 <= maxJobIndex)
-                        {
                             elevator.CurrentFloor = nextFloor;
-                            Thread.Sleep(200);
-                            Console.WriteLine("Elevator :" + elevator.ItemId + " Floor No. :" + elevator.CurrentFloor.FloorNo);
-                        }
 
                         startJobIndex++;
                     }
-                    Console.WriteLine("----------------------UP END----------------------");
                     elevator.Direction = MoveType.Down;
                 }
                 else if (elevator.Direction == MoveType.Down)
@@ -68,28 +74,37 @@ namespace SmartBuilding.Services.Elevator
 
                     int minJobIndex = Math.Min(callersMin, passengersMin);
                     int startJobIndex = elevator.CurrentFloor.FloorNo;
-                    Console.WriteLine("----------------------DOWN START------------------");
                     while (startJobIndex >= minJobIndex)
                     {
                         OffLoadPassengers();
                         LoadPassengers();
+                        BroadCast();
 
                         var prevFloor = floors.FirstOrDefault(i => i.FloorNo == startJobIndex - 1);
                         if (prevFloor != null && startJobIndex - 1 >= minJobIndex)
-                        {
                             elevator.CurrentFloor = prevFloor;
-                            Thread.Sleep(200);
-                            Console.WriteLine("Elevator :" + elevator.ItemId + " Floor No. :" + elevator.CurrentFloor.FloorNo);
-                        }
 
                         startJobIndex--;
                     }
-                    Console.WriteLine("----------------------DOWN END--------------------");
                     elevator.Direction = MoveType.Up;
                 }
             }
 
             return await Task.FromResult(elevator);
+        }
+
+        private void BroadCast()
+        {
+            if (observable == null)
+                return;
+
+            observable.Notify(new ElevatorMovement()
+            {
+                CurrentFloor = elevator.CurrentFloor,
+                Direction = elevator.Direction,
+                ElevatorName = elevator.ItemId,
+                OnBoardPassengers = elevator.Passengers.Count(i => i.ToFloor != null || (i.ToFloor == null && i.Waiting == false))
+            });
         }
 
         private async Task<int> GetCallerMaxValueAsync()
