@@ -6,24 +6,30 @@ namespace SmartBuilding.Core
 {
     public class Elevator : IElevator
     {
-        public Elevator(string itemId, IFloor currentFloor, int maxWeight)
+        public Elevator(string itemId, IFloor currentFloor, int maxPassengerLimit)
         {
             if (currentFloor == null)
                 throw new ArgumentNullException();
 
-            if (maxWeight <= 0)
-                throw new ArgumentOutOfRangeException(nameof(maxWeight));
+            if (maxPassengerLimit <= 0)
+                throw new ArgumentOutOfRangeException(nameof(MaxPassengerLimit));
 
             ItemId = itemId;
             CurrentFloor = currentFloor;
-            MaxPassengerLimit = maxWeight;
-            Direction = MoveType.Idle;
+            MaxPassengerLimit = maxPassengerLimit;
+            Direction = MoveDirection.Idle;
             Passengers = new List<IElevatorPassenger>();
+        }
+
+        public Elevator(string itemId, IFloor currentFloor, int maxPassengerLimit, MoveDirection direction) : 
+            this(itemId, currentFloor, maxPassengerLimit)
+        {
+            Direction = direction;
         }
 
         public string ItemId { get; set; }
 
-        public MoveType Direction { get; set; } //changes during move, load and unload operations
+        public MoveDirection Direction { get; set; } //changes during move, load and unload operations
 
         public int MaxPassengerLimit { get; set; } //changes during load and unload operation
 
@@ -38,15 +44,15 @@ namespace SmartBuilding.Core
         public void SetElevatorStatus(int minFloor, int maxFloor)
         {
             if (CurrentFloor.FloorNo == minFloor)
-                Direction = MoveType.Up;
+                Direction = MoveDirection.Up;
 
             else if (CurrentFloor.FloorNo == maxFloor)
-                Direction = MoveType.Down;
+                Direction = MoveDirection.Down;
         }
 
         public void ResetStatus()
         {
-            Direction = MoveType.Idle;
+            Direction = MoveDirection.Idle;
         }
     }
 }

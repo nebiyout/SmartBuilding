@@ -23,9 +23,7 @@ namespace SmartBuilding.Utils.PubSub
         public void Notify(T value)
         {
             foreach (var observer in observers)
-            {
                 observer.OnNext(value);
-            }
         }
 
         private class Unsubscriber : IDisposable

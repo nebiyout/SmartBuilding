@@ -6,7 +6,7 @@ namespace SmartBuilding.Core
 {
     public class ElevatorPassenger : IElevatorPassenger
     {
-        public ElevatorPassenger(IElevator calledElevator, IFloor fromFloor, IFloor? toFloor, MoveType moveDirection)
+        public ElevatorPassenger(IElevator calledElevator, IFloor fromFloor, IFloor? toFloor, MoveDirection moveDirection)
         {
             CalledElevator = calledElevator;
             FromFloor = fromFloor;
@@ -22,6 +22,6 @@ namespace SmartBuilding.Core
 
         public bool Waiting { get; set; } = true;
 
-        public MoveType Direction { get; set; }
+        public MoveDirection Direction { get; set; }
     }
 }

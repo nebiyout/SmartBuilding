@@ -41,12 +41,12 @@ async void SetupBuilding()
         throw new NullReferenceException("No available elevator.");
 
     var callerFloor = floors[33]; //30
-    var callerMove = MoveType.Down;
+    var callerMove = MoveDirection.Down;
     var selectedElevator = await CallElevatorAsync(elevators, callerFloor, callerMove);
     await QueuePassengerAsync(selectedElevator, callerFloor, callerMove);
 
     var callerFloor1 = floors[10]; //7
-    var callerMove1 = MoveType.Down;
+    var callerMove1 = MoveDirection.Down;
     var selectedElevator1 = await CallElevatorAsync(elevators, callerFloor1, callerMove1);
     await QueuePassengerAsync(selectedElevator1, callerFloor1, callerMove1);
 
@@ -59,22 +59,22 @@ async void SetupBuilding()
     //selectedElevator.Passengers[1].Waiting = false;
     //selectedElevator.Passengers[1].ToFloor = floors[0];//-3
 
-    selectedElevator1.Passengers[0].Waiting = false;
-    selectedElevator1.Passengers[0].ToFloor = floors[0];//-3
+    //selectedElevator1.Passengers[0].Waiting = false;
+   // selectedElevator1.Passengers[0].ToFloor = floors[0];//-3
 
     await new MoveOperation(selectedElevator, observable).ExecuteAsync();
-    await new MoveOperation(selectedElevator1, observable).ExecuteAsync();
+   // await new MoveOperation(selectedElevator1, observable).ExecuteAsync();
 
     Console.ReadLine();
 }
 
-async Task<IElevator> CallElevatorAsync(IEnumerable<IElevator> elevators, IFloor callerFloor, MoveType callerMove)
+async Task<IElevator> CallElevatorAsync(IEnumerable<IElevator> elevators, IFloor callerFloor, MoveDirection callerMove)
 {
     var callOperation = new CallOperation(elevators, callerFloor, callerMove);
     return await callOperation.ExecuteAsync();
 }
 
-async Task QueuePassengerAsync(IElevator elevator, IFloor callerFloor, MoveType callerMove)
+async Task QueuePassengerAsync(IElevator elevator, IFloor callerFloor, MoveDirection callerMove)
 {
     var passengers = new List<IElevatorPassenger>();
     var passenger = new ElevatorPassenger(elevator, callerFloor, null, callerMove);

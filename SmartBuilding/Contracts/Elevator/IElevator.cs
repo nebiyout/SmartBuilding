@@ -4,7 +4,7 @@ namespace SmartBuilding.Contracts.Elevator
 {
     public interface IElevator : IBuildingItem
     {
-        MoveType Direction { get; set; }
+        MoveDirection Direction { get; set; }
 
         IFloor CurrentFloor { get; set; }
 

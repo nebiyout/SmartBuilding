@@ -10,6 +10,6 @@ namespace SmartBuilding.Contracts
 
         bool Waiting { get; set; }
 
-        MoveType Direction { get; set; }
+        MoveDirection Direction { get; set; }
     }
   }

@@ -46,7 +46,7 @@ namespace SmartBuilding.Services.Elevator
 
                 InitiateElevatorStatus();
 
-                if (elevator.Direction == MoveType.Up)
+                if (elevator.Direction == MoveDirection.Up)
                 {
                     int callersMax = await GetCallerMaxValueAsync();
                     int passengersMax = await GetPassengerMaxValueAsync();
@@ -65,9 +65,9 @@ namespace SmartBuilding.Services.Elevator
 
                         startJobIndex++;
                     }
-                    elevator.Direction = MoveType.Down;
+                    elevator.Direction = MoveDirection.Down;
                 }
-                else if (elevator.Direction == MoveType.Down)
+                else if (elevator.Direction == MoveDirection.Down)
                 {
                     int callersMin = await GetCallerMinValueAsync();
                     int passengersMin = await GetPassengerMinValueAsync();
@@ -86,7 +86,7 @@ namespace SmartBuilding.Services.Elevator
 
                         startJobIndex--;
                     }
-                    elevator.Direction = MoveType.Up;
+                    elevator.Direction = MoveDirection.Up;
                 }
             }
 
@@ -147,40 +147,30 @@ namespace SmartBuilding.Services.Elevator
             return await Task.FromResult(passengersMin);
         }
 
-        private void OffLoadPassengers()
+        private async Task OffLoadPassengers()
         {
             Func<IElevatorPassenger, bool> funcDepartingPassengers = i => i.ToFloor != null && i.Waiting == false
             && i.ToFloor.FloorNo == elevator.CurrentFloor.FloorNo;
-            Predicate<IElevatorPassenger> predepartingPassengers = new Predicate<IElevatorPassenger>(funcDepartingPassengers);
 
-            if (elevator.Passengers.Any(funcDepartingPassengers))
-                elevator.Passengers.RemoveAll(predepartingPassengers);
+            await new UnloadOperation(elevator, funcDepartingPassengers).ExecuteAsync();
         }
 
-        private void LoadPassengers()
+        private async Task LoadPassengers()
         {
-            //passengers who are going in to the elevator 
-            var passengersGotToElevator = elevator.Passengers
-               .Where(i => i.ToFloor == null && i.Waiting == true
-               && i.FromFloor.FloorNo == elevator.CurrentFloor.FloorNo
-               && elevator.Direction == i.Direction
-               && elevator.ItemId == i.CalledElevator.ItemId);
-
-            foreach (IElevatorPassenger passenger in passengersGotToElevator)
-                passenger.Waiting = false;
+            await new LoadOperation(elevator).ExecuteAsync();
         }
 
         private void InitiateElevatorStatus()
         {
-            if (elevator.Direction == MoveType.Idle && elevator.Passengers.Any())
+            if (elevator.Direction == MoveDirection.Idle && elevator.Passengers.Any())
             {
                 var upperPassangers = elevator.Passengers
                     .Where(i => i.FromFloor.FloorNo > elevator.CurrentFloor.FloorNo);
 
                 if (upperPassangers.Any())
-                    elevator.Direction = MoveType.Up;
+                    elevator.Direction = MoveDirection.Up;
                 else
-                    elevator.Direction = MoveType.Down;
+                    elevator.Direction = MoveDirection.Down;
             }
         }
     }

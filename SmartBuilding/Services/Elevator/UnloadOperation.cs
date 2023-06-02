@@ -6,17 +6,23 @@ namespace SmartBuilding.Services.Elevator
     public class UnloadOperation : IOperation<IElevator>
     {
         private readonly IElevator elevator;
-        private readonly IList<IElevatorPassenger> passengers;
+        private Func<IElevatorPassenger, bool> criteria;
 
-        public UnloadOperation(IElevator elevator, IList<IElevatorPassenger> passengers)
+        public UnloadOperation(IElevator elevator, Func<IElevatorPassenger, bool> criteria)
         {
             this.elevator = elevator;
-            this.passengers = passengers;
+            this.criteria = criteria;
         }
+        
 
         public async Task<IElevator> ExecuteAsync()
         {
-            throw new NotImplementedException();
+            Predicate<IElevatorPassenger> predepartingPassengers = new Predicate<IElevatorPassenger>(criteria);
+
+            if (elevator.Passengers.Any(criteria))
+                elevator.Passengers.RemoveAll(predepartingPassengers);
+
+            return elevator;
         }
     }
 }
