@@ -10,13 +10,11 @@ namespace SmartBuilding.Services.Elevator
     public class LoadOperation : IOperation<IElevator>
     {
         private readonly IElevator elevator;
-        private readonly NotificationManager<LoadingDto> notificationManager;
 
         public LoadOperation(IElevator elevator)
         {
             this.elevator = elevator;
-            notificationManager = new NotificationManager<LoadingDto>();
-            notificationManager.Subscribe(new LoadingNotification());
+            NotificationManager<LoadingDto>.Subscribe(new LoadingNotification());
         }
 
         public Task<IElevator> ExecuteAsync()
@@ -40,7 +38,7 @@ namespace SmartBuilding.Services.Elevator
 
         private void Broadcast(int totalPassengers)
         {
-            notificationManager.Notify(new LoadingDto()
+            NotificationManager<LoadingDto>.Notify(new LoadingDto()
             {
                 ElevatorName = elevator.ItemId,
                 FloorNo = elevator.CurrentFloor.FloorNo,

@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 
 namespace SmartBuilding.Services.Elevator.Notification
 {
-    public class NotificationManager<T> where T : class
+    public static class NotificationManager<T> where T : class
     {
         private static List<Observable<T>> observables = new List<Observable<T>>();
 
-        private Observable<T> GetObservable()
+        private static Observable<T> GetObservable()
         {
             var observable = observables.FirstOrDefault<Observable<T>>();
 
@@ -28,7 +28,7 @@ namespace SmartBuilding.Services.Elevator.Notification
             return observable;
         }
 
-        public void Subscribe<K>(K k) where K : IObserver<T>
+        public static void Subscribe<K>(K k) where K : IObserver<T>
         {
             var observable = GetObservable();
 
@@ -38,7 +38,7 @@ namespace SmartBuilding.Services.Elevator.Notification
             observable.Subscribe(k);
         }
 
-        public void Notify(T t)
+        public static void Notify(T t)
         {
             var observable = GetObservable();
             observable.Notify(t);

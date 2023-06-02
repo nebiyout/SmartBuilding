@@ -11,14 +11,12 @@ namespace SmartBuilding.Services.Elevator
     {
         private readonly IElevator elevator;
         private Func<IElevatorPassenger, bool> criteria;
-        private readonly NotificationManager<LoadingDto> notificationManager;
 
         public UnloadOperation(IElevator elevator, Func<IElevatorPassenger, bool> criteria)
         {
             this.elevator = elevator;
             this.criteria = criteria;
-            notificationManager = new NotificationManager<LoadingDto>();
-            notificationManager.Subscribe(new LoadingNotification());
+            NotificationManager<LoadingDto>.Subscribe(new LoadingNotification());
         }
                 
         public async Task<IElevator> ExecuteAsync()
@@ -31,12 +29,12 @@ namespace SmartBuilding.Services.Elevator
                 elevator.Passengers.RemoveAll(predepartingPassengers);
             }
 
-            return elevator;
+            return await Task.FromResult(elevator);
         }
 
         private void Broadcast(int totalPassengers)
         {
-            notificationManager.Notify(new LoadingDto()
+            NotificationManager<LoadingDto>.Notify(new LoadingDto()
             {
                 ElevatorName = elevator.ItemId,
                 FloorNo = elevator.CurrentFloor.FloorNo,

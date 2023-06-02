@@ -15,7 +15,6 @@ namespace SmartBuilding.Services.Elevator
         private readonly IEnumerable<IFloor> floors;
         private readonly int minFloor;
         private readonly int maxFloor;
-        private readonly NotificationManager<ElevatorUpdateDto> notificationManager;
 
         public MoveOperation(IElevator elevator)
         {
@@ -25,9 +24,8 @@ namespace SmartBuilding.Services.Elevator
 
             minFloor = floors.Min(i => i.FloorNo);
             maxFloor = floors.Min(i => i.FloorNo);
-
-            notificationManager = new NotificationManager<ElevatorUpdateDto>();
-            notificationManager.Subscribe(new MovementNotification());
+            
+            NotificationManager<ElevatorUpdateDto>.Subscribe(new MovementNotification());
         }
 
 
@@ -93,7 +91,7 @@ namespace SmartBuilding.Services.Elevator
 
         private void BroadCast()
         {
-            notificationManager.Notify(new ElevatorUpdateDto()
+            NotificationManager<ElevatorUpdateDto>.Notify(new ElevatorUpdateDto()
             {
                 FloorNo = elevator.CurrentFloor.FloorNo,
                 Direction = elevator.Direction.ToString(),
