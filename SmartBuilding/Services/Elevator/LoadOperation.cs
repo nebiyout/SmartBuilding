@@ -16,9 +16,12 @@ namespace SmartBuilding.Services.Elevator
             this.elevator = elevator;
         }
 
+        /// <summary>
+        /// load passengers
+        /// </summary>
+        /// <returns></returns>
         public Task<IElevator> ExecuteAsync()
         {
-            //passengers who are going in to the elevator 
             var passengersGotToElevator = elevator.Passengers
                .Where(i => i.ToFloor == null && i.Waiting == true
                && i.FromFloor.FloorNo == elevator.CurrentFloor.FloorNo

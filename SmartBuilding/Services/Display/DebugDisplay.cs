@@ -5,17 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SmartBuilding.Services
+namespace SmartBuilding.Services.Display
 {
-    public class ConsoleDisplay : IDisplay
+    public class DebugDisplay : IDisplay
     {
-        public ConsoleDisplay() { 
-        }
-
         public void Show(string data)
         {
             Thread.Sleep(250);
-            Console.WriteLine(data);
+            System.Diagnostics.Debug.WriteLine(data);
         }
     }
 }

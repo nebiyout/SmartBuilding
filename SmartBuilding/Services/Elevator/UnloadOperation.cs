@@ -17,7 +17,11 @@ namespace SmartBuilding.Services.Elevator
             this.elevator = elevator;
             this.criteria = criteria;
         }
-                
+        
+        /// <summary>
+        /// unload passengers
+        /// </summary>
+        /// <returns></returns>
         public async Task<IElevator> ExecuteAsync()
         {
             Predicate<IElevatorPassenger> predepartingPassengers = new Predicate<IElevatorPassenger>(criteria);

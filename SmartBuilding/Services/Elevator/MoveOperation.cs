@@ -2,6 +2,7 @@
 using SmartBuilding.Contracts.Elevator;
 using SmartBuilding.Contracts.Floor;
 using SmartBuilding.Core.Dto;
+using SmartBuilding.Services.Display;
 using SmartBuilding.Services.Elevator.Notification;
 using SmartBuilding.Utils;
 using SmartBuilding.Utils.PubSub;
