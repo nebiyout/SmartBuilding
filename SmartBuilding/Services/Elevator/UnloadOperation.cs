@@ -16,7 +16,6 @@ namespace SmartBuilding.Services.Elevator
         {
             this.elevator = elevator;
             this.criteria = criteria;
-            NotificationManager<LoadingDto>.Subscribe(new LoadingNotification());
         }
                 
         public async Task<IElevator> ExecuteAsync()
@@ -25,22 +24,10 @@ namespace SmartBuilding.Services.Elevator
 
             if (elevator.Passengers.Any(criteria))
             {
-                Broadcast(elevator.Passengers.Count(criteria));
                 elevator.Passengers.RemoveAll(predepartingPassengers);
             }
 
             return await Task.FromResult(elevator);
-        }
-
-        private void Broadcast(int totalPassengers)
-        {
-            NotificationManager<LoadingDto>.Notify(new LoadingDto()
-            {
-                ElevatorName = elevator.ItemId,
-                FloorNo = elevator.CurrentFloor.FloorNo,
-                Operation = "Unloading Passengers",
-                OnBoardPassengers = totalPassengers
-            });
         }
     }
 }

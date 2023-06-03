@@ -1,4 +1,5 @@
-﻿using SmartBuilding.Core.Dto;
+﻿using SmartBuilding.Contracts;
+using SmartBuilding.Core.Dto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,23 +10,26 @@ namespace SmartBuilding.Services.Elevator.Notification
 {
     public class LoadingNotification : IObserver<LoadingDto>
     {
-        private static IList<LoadingDto> elevatorMovements = new List<LoadingDto>();
+        private readonly IDisplay display;
+
+        public LoadingNotification(IDisplay display)
+        {
+            this.display = display;
+        }
 
         public void OnNext(LoadingDto value)
         {
-            Thread.Sleep(100);
-
-            Console.WriteLine($"Elevator : {value.ElevatorName}  |  Floor No.: {value.FloorNo}  |  Operation: {value.Operation}  {value.OnBoardPassengers}  Passengers");
+            string data = $"Elevator : {value.ElevatorName}  |  Floor No.: {value.FloorNo}  |  Operation: {value.Operation}  {value.OnBoardPassengers}  Passengers";
+            display.Show(data);
         }
 
         public void OnError(Exception error)
         {
-            Console.WriteLine($"An error occurred: {error.Message}");
+
         }
 
         public void OnCompleted()
         {
-            Console.WriteLine("Completed");
         }
     }
 }

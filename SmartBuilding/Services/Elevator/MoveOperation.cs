@@ -25,7 +25,7 @@ namespace SmartBuilding.Services.Elevator
             minFloor = floors.Min(i => i.FloorNo);
             maxFloor = floors.Min(i => i.FloorNo);
             
-            NotificationManager<ElevatorUpdateDto>.Subscribe(new MovementNotification());
+            NotificationManager<ElevatorUpdateDto>.Subscribe(new MovementNotification(Activator.CreateInstance<ConsoleDisplay>()));
         }
 
 

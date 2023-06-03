@@ -10,9 +10,9 @@ namespace SmartBuilding.Core.Dto
 {
     public class ElevatorUpdateDto
     {
-        public string ElevatorName { get; set; }
+        public string ElevatorName { get; set; } = string.Empty;
 
-        public string Direction { get; set; }
+        public string Direction { get; set; } = string.Empty;
 
         public int FloorNo { get; set; }
 

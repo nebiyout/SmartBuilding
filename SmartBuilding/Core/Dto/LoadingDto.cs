@@ -8,11 +8,11 @@ namespace SmartBuilding.Core.Dto
 {
     public class LoadingDto
     {
-        public string ElevatorName { get; set; }
+        public string ElevatorName { get; set; } = string.Empty;
 
         public int FloorNo { get; set; }
 
-        public string Operation { get; set; }
+        public string Operation { get; set; } = string.Empty;
 
         public int OnBoardPassengers { get; set; }
     }

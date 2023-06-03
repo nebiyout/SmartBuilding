@@ -10,23 +10,27 @@ namespace SmartBuilding.Services.Elevator.Notification
 {
     public class MovementNotification : IObserver<ElevatorUpdateDto>
     {
+        private readonly IDisplay display;
+
+        public MovementNotification(IDisplay display)
+        {
+            this.display = display;
+        }
+
         private static IList<ElevatorUpdateDto> elevatorMovements = new List<ElevatorUpdateDto>();
 
         public void OnNext(ElevatorUpdateDto value)
         {
-            Thread.Sleep(100);
-
-            Console.WriteLine($"Elevator : {value.ElevatorName}  |  Floor No.: {value.FloorNo}  |  Direction: {value.Direction}  |  Passengers : " + value.OnBoardPassengers);
+            string data = $"Elevator : {value.ElevatorName}  |  Floor No.: {value.FloorNo}  |  Direction: {value.Direction}  |  Passengers : " + value.OnBoardPassengers;
+            display.Show(data);
         }
 
         public void OnError(Exception error)
         {
-            Console.WriteLine($"An error occurred: {error.Message}");
         }
 
         public void OnCompleted()
         {
-            Console.WriteLine("Completed");
         }
     }
 }

@@ -21,11 +21,6 @@ async void SetupBuilding()
 {
     Observable<ElevatorUpdateDto> observable = new Observable<ElevatorUpdateDto>();
 
-    // Subscribe an observer
-    var observer = new MovementNotification();
-    var observer1 = new LoadingNotification();
-    var subscription = observable.Subscribe(observer);
-
     IBuilding building = BuildingHelper.SetUpBuiling("Plaza Hotel");
     IBuildingProcessor buildingProcessor = BuildingHelper.GetBuildingProcessor(building);
 
@@ -52,26 +47,16 @@ async void SetupBuilding()
     callRequests.Add(new CallOperation(elevators, floors[2], MovementDirection.Down));//-1
     callRequests.Add(new CallOperation(elevators, floors[14], MovementDirection.Down));//11
 
-    var groupedCalls = callRequests
-        .GroupBy(i => i.CallerDirection)
-        .Select(i => new
-        {
-            Direction = i.Key,
-            Callers = i.Select(i => i).ToList()
-        }).ToList();
 
     List<IElevator> selectedElevators = new List<IElevator>();
 
-    groupedCalls.ForEach(groupedCall =>
+    callRequests.ForEach(async callRequest =>
     {
-        groupedCall.Callers.ForEach(async call =>
-        {
-            IElevator selectedElevator = await call.ExecuteAsync();
-            await QueuePassengerAsync(selectedElevator, call.CallerFloor, groupedCall.Direction);
+        IElevator selectedElevator = await callRequest.ExecuteAsync();
+        await QueuePassengerAsync(selectedElevator, callRequest.CallerFloor, callRequest.CallerDirection);
 
-            if (!selectedElevators.Any(i => i.ItemId == selectedElevator.ItemId))
-                selectedElevators.Add(selectedElevator);
-        });
+        if (!selectedElevators.Any(i => i.ItemId == selectedElevator.ItemId))
+            selectedElevators.Add(selectedElevator);
     });
 
     selectedElevators.ForEach(async elevator =>
