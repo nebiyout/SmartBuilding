@@ -8,11 +8,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SmartBuilding.Contracts;
+using SmartBuilding.Services.Display;
 
 namespace SmartBuilding.Services.Elevator.Notification
 {
     public static class NotificationManager<T> where T : class
     {
+        
+
         private static List<Observable<T>> observables = new List<Observable<T>>();
 
         private static Observable<T> GetObservable()

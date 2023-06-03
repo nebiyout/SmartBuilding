@@ -9,9 +9,8 @@ namespace SmartBuilding.Services.Display
 {
     public class DebugDisplay : IDisplay
     {
-        public void Show(string data)
+        public void Send(string data)
         {
-            Thread.Sleep(250);
             System.Diagnostics.Debug.WriteLine(data);
         }
     }

@@ -14,12 +14,12 @@ namespace SmartBuilding.Services.Elevator
             this.passengers = passengers;
         }
 
-        public async Task<IElevator> ExecuteAsync()
+        public IElevator Execute()
         {
             foreach (IElevatorPassenger passenger in passengers)
                 elevator.Passengers.Add(passenger);
 
-            return await Task.FromResult(elevator);
+            return elevator;
         }
     }
 }

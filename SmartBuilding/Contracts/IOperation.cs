@@ -2,6 +2,6 @@
 {
     public interface IOperation<T> where T : IBuildingItem
     {
-        Task<T> ExecuteAsync();
+        T Execute();
     }
 }

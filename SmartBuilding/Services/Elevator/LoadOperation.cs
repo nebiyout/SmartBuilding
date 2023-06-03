@@ -20,7 +20,7 @@ namespace SmartBuilding.Services.Elevator
         /// load passengers
         /// </summary>
         /// <returns></returns>
-        public Task<IElevator> ExecuteAsync()
+        public IElevator Execute()
         {
             var passengersGotToElevator = elevator.Passengers
                .Where(i => i.ToFloor == null && i.Waiting == true
@@ -34,7 +34,7 @@ namespace SmartBuilding.Services.Elevator
                     passenger.Waiting = false;
             }
             
-            return Task.FromResult(elevator);
+            return elevator;
         }
     }
 }

@@ -8,6 +8,6 @@ namespace SmartBuilding.Contracts
 {
     public interface IDisplay
     {
-        void Show(string data);
+        void Send(string data);
     }
 }

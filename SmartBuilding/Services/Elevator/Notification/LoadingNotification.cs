@@ -20,7 +20,7 @@ namespace SmartBuilding.Services.Elevator.Notification
         public void OnNext(LoadingDto value)
         {
             string data = $"Elevator : {value.ElevatorName}  |  Floor No.: {value.FloorNo}  |  Operation: {value.Operation}  {value.OnBoardPassengers}  Passengers";
-            display.Show(data);
+            display.Send(data);
         }
 
         public void OnError(Exception error)
@@ -30,6 +30,7 @@ namespace SmartBuilding.Services.Elevator.Notification
 
         public void OnCompleted()
         {
+
         }
     }
 }

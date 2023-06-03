@@ -21,8 +21,9 @@ namespace SmartBuilding.Services.Elevator.Notification
 
         public void OnNext(ElevatorUpdateDto value)
         {
+            Thread.Sleep(250);
             string data = $"Elevator : {value.ElevatorName}  |  Floor No.: {value.FloorNo}  |  Direction: {value.Direction}  |  Passengers : " + value.OnBoardPassengers;
-            display.Show(data);
+            display.Send(data);
         }
 
         public void OnError(Exception error)

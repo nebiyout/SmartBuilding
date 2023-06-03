@@ -34,9 +34,6 @@ async void SetupBuilding()
 
     IEnumerable<IElevator> elevators = buildingProcessor.GetAvailableItems<IElevator>();
 
-    //elevators = BuildingHelper.SetupBuildingElevators(3,floors[2]);
-    //buildingProcessor.AddRange<IElevator>(elevators);
-
     if (!elevators.Any())
         throw new NullReferenceException("No available elevator.");
 
@@ -47,13 +44,12 @@ async void SetupBuilding()
     callRequests.Add(new CallOperation(elevators, floors[2], MovementDirection.Down));//-1
     callRequests.Add(new CallOperation(elevators, floors[14], MovementDirection.Down));//11
 
-
     List<IElevator> selectedElevators = new List<IElevator>();
 
-    callRequests.ForEach(async callRequest =>
+    callRequests.ForEach(callRequest =>
     {
-        IElevator selectedElevator = await callRequest.ExecuteAsync();
-        await QueuePassengerAsync(selectedElevator, callRequest.CallerFloor, callRequest.CallerDirection);
+        IElevator selectedElevator = callRequest.Execute();
+        QueuePassenger(selectedElevator, callRequest.CallerFloor, callRequest.CallerDirection);
 
         if (!selectedElevators.Any(i => i.ItemId == selectedElevator.ItemId))
             selectedElevators.Add(selectedElevator);
@@ -61,20 +57,20 @@ async void SetupBuilding()
 
     selectedElevators.ForEach(async elevator =>
     {
-        await new MoveOperation(elevator).ExecuteAsync();
+        new MoveOperation(elevator).Execute();
     });
 
     Console.ReadLine();
 }
 
-async Task QueuePassengerAsync(IElevator elevator, IFloor callerFloor, MovementDirection callerMove)
+void QueuePassenger(IElevator elevator, IFloor callerFloor, MovementDirection callerMove)
 {
     var passengers = new List<IElevatorPassenger>();
     var passenger = new ElevatorPassenger(elevator, callerFloor, null, callerMove);
     passengers.Add(passenger);
 
     var queueOperation = new QueueOperation(elevator, passengers);
-    IElevator passengerQueued = await queueOperation.ExecuteAsync();
+    IElevator passengerQueued = queueOperation.Execute();
 }
 
 

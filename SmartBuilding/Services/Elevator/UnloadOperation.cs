@@ -22,7 +22,7 @@ namespace SmartBuilding.Services.Elevator
         /// unload passengers
         /// </summary>
         /// <returns></returns>
-        public async Task<IElevator> ExecuteAsync()
+        public IElevator Execute()
         {
             Predicate<IElevatorPassenger> predepartingPassengers = new Predicate<IElevatorPassenger>(criteria);
 
@@ -31,7 +31,7 @@ namespace SmartBuilding.Services.Elevator
                 elevator.Passengers.RemoveAll(predepartingPassengers);
             }
 
-            return await Task.FromResult(elevator);
+            return elevator;
         }
     }
 }

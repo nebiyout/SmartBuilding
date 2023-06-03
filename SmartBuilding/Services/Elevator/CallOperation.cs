@@ -25,16 +25,16 @@ namespace SmartBuilding.Services.Elevator
 
         public MovementDirection CallerDirection => callerDirection;
 
-        public async Task<IElevator> ExecuteAsync()
+        public IElevator Execute()
         {
-            IElevator? closestElevator = await FindClosestElevatorAsync();
+            IElevator? closestElevator = FindClosestElevator();
 
             _ = closestElevator ?? throw new ArgumentNullException("No closest available elevator");
 
             return closestElevator;
         }
 
-        private async Task<IElevator?> FindClosestElevatorAsync()
+        private IElevator? FindClosestElevator()
         {
             IElevator? closestElevator;
 
@@ -74,12 +74,12 @@ namespace SmartBuilding.Services.Elevator
                         }
                         else if (elevator.CurrentFloor.FloorNo > callerFloor.FloorNo)
                         {
-                            distance = await GetMinDistance(elevator, callerFloor);
+                            distance = GetMinDistance(elevator, callerFloor);
                         }
                     }
                     else if (callerDirection == MovementDirection.Down)
                     {
-                        distance = await GetMinDistance(elevator, callerFloor);
+                        distance = GetMinDistance(elevator, callerFloor);
                     }
                 }
                 else if (elevator.Direction == MovementDirection.Down)
@@ -89,7 +89,7 @@ namespace SmartBuilding.Services.Elevator
                         //check if the elevator is at lower floor than the caller floor.
                         if (elevator.CurrentFloor.FloorNo < callerFloor.FloorNo)
                         {
-                            distance = await GetMinDistance(elevator, callerFloor);
+                            distance = GetMinDistance(elevator, callerFloor);
                         }
                         else if (elevator.CurrentFloor.FloorNo > callerFloor.FloorNo)
                         {
@@ -98,7 +98,7 @@ namespace SmartBuilding.Services.Elevator
                     }
                     else if (callerDirection == MovementDirection.Up)
                     {
-                        distance = await GetMinDistance(elevator, callerFloor);
+                        distance = GetMinDistance(elevator, callerFloor);
                     }
                 }
 
@@ -118,7 +118,7 @@ namespace SmartBuilding.Services.Elevator
         /// <param name="elevator"></param>
         /// <param name="callerFloor"></param>
         /// <returns></returns>
-        private async Task<int> GetMinDistance(IElevator elevator, IFloor callerFloor)
+        private int GetMinDistance(IElevator elevator, IFloor callerFloor)
         {
             int minDistance = int.MaxValue;
 
@@ -172,7 +172,7 @@ namespace SmartBuilding.Services.Elevator
                 }
             }
 
-            return await Task.FromResult(minDistance);
+            return minDistance;
         }
     }
 }
