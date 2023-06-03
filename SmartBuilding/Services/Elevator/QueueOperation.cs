@@ -6,19 +6,17 @@ namespace SmartBuilding.Services.Elevator
     public class QueueOperation : IOperation<IElevator>
     {
         private readonly IElevator elevator;
-        private readonly IList<IElevatorPassenger> passengers;
+        private readonly IElevatorPassenger passenger;
 
-        public QueueOperation(IElevator elevator, IList<IElevatorPassenger> passengers)
+        public QueueOperation(IElevator elevator, IElevatorPassenger passenger)
         {
             this.elevator = elevator;
-            this.passengers = passengers;
+            this.passenger = passenger;
         }
 
         public IElevator Execute()
         {
-            foreach (IElevatorPassenger passenger in passengers)
-                elevator.Passengers.Add(passenger);
-
+            elevator.Passengers.Add(passenger);
             return elevator;
         }
     }

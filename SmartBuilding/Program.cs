@@ -13,6 +13,7 @@ using System.Runtime.Serialization;
 using System.Reflection.Metadata.Ecma335;
 using System.Reflection;
 using System.IO;
+using System.ComponentModel;
 
 internal class Program
 {
@@ -50,14 +51,14 @@ internal class Program
                     building = CollectBuildingData();
                     if (building is null)
                         return true;
-                    
+
                     IBuildingProcessor buildingProcessor = BuildingHelper.GetBuildingProcessor(building);
                     buildingProcessor.ClearItems();
 
                     IList<IFloor>? floors = null;
 
-                    while(floors == null)
-                    floors = CollectBuildingFloorData();
+                    while (floors == null)
+                        floors = CollectBuildingFloorData();
                     buildingProcessor.AddRange(floors);
 
                     IList<IElevator> elevators = CollectElevatorData(floors[0]);
@@ -136,7 +137,7 @@ internal class Program
                 Console.WriteLine("===========================================================");
                 Console.WriteLine($"   Enter the elevator data and press anykey   ");
                 Console.WriteLine("===========================================================");
-                Console.WriteLine();                
+                Console.WriteLine();
                 Console.Write("Enter the total number of elevator: ");
                 bool elevatorResult = int.TryParse(Console.ReadLine(), out totalElevator);
 
@@ -149,15 +150,15 @@ internal class Program
 
                 do
                 {
-                    Console.Write($"Enter the maximum head count limit #{index} :");
+                    Console.Write($"Enter the maximum head count for elevator #{index} :");
                     bool elevatorLimitResult = int.TryParse(Console.ReadLine(), out elevatorLimit);
 
                     if (!elevatorLimitResult || elevatorLimit <= 0)
                         continue;
 
+                    elevators.Add(new Elevator("EL-" + index, floor, elevatorLimit));
                     index++;
 
-                    elevators.Add(new Elevator("EL-" + index, floor, elevatorLimit));
                 } while (index <= totalElevator);
                 collectData = false;
             }
@@ -173,43 +174,50 @@ internal class Program
             {
                 while (true)
                 {
-
                     Console.Clear();
                     Console.WriteLine("=============================================");
                     Console.WriteLine($"         Select Elevator Operation          ");
-                    Console.WriteLine("============================================="); 
-                    Console.WriteLine($" Minimum Floor No. ({floors[0].FloorNo})");
-                    Console.WriteLine($" Maximum Floor No. ({floors[floors.Count-1].FloorNo})");
-                    Console.WriteLine($" ------------------------------------------");
-                    Console.WriteLine("Press #1 to call elevator");
-                    Console.WriteLine($"Press #2 to go to your destination Pending({elevators.SelectMany(i=>i.Passengers).Count(i=>i.Waiting == true || (i.Waiting == false && i.ToFloor == null)) })" );
-                    Console.WriteLine("Press #3 to exit");
+                    Console.WriteLine("=============================================");
+                    Console.WriteLine($" Min Floor No. ({floors[0].FloorNo})  Max Floor No. ({floors[floors.Count - 1].FloorNo})");
+                    Console.WriteLine($" --------------------------------------------");
+                    Console.WriteLine($"Press #1 to call elevator");
+                    Console.WriteLine($"Press #2 move passangers, Pending({elevators.SelectMany(i => i.Passengers).Count(i => i.Waiting == true || (i.Waiting == false && i.ToFloor == null))})");
+                    Console.WriteLine($"Press #3 to check elevator status");
+                    Console.WriteLine("Press #4 to exit");
                     Console.Write("\r\nSelect an option: ");
 
                     switch (Console.ReadLine())
                     {
                         case "1":
-                            IFloor callerFloor;
-                            MovementDirection direction;
-                            int noOfPassengers = 0;
-                            var passengers = new List<IElevatorPassenger>();
+                            int totalPassenger = 0;
+                            bool passengerResult = false;
 
-                            CallOperation caller = CollectElevatorCallData(elevators, floors,
-                                out callerFloor, out direction, out noOfPassengers);
-                            var selectedElevator = caller.Execute();
-
-                            if (callerFloor != null && noOfPassengers > 0)
+                            while (!passengerResult)
                             {
-                                for (int i = 1; i <= noOfPassengers; i++)
+                                Console.Write("Enter the total number of passengers: ");
+                                passengerResult = int.TryParse(Console.ReadLine(), out totalPassenger);
+
+                                if (!passengerResult || totalPassenger <= 0)
+                                    continue;
+
+                                var callers = GetCallerData(elevators, totalPassenger, floors, out passengerResult);
+
+                                List<IElevator> selectedElevators = new List<IElevator>();
+
+                                callers.ForEach(call =>
                                 {
-                                    var passenger = new ElevatorPassenger(selectedElevator, callerFloor, null, direction);
-                                    passengers.Add(passenger);
-                                }
+                                    var selectedElevator = call.Execute();
+                                    var passenger = new ElevatorPassenger(selectedElevator, call.CallerFloor, null, call.CallerDirection);
+                                    var queuedElevator = new QueueOperation(selectedElevator, passenger).Execute();
 
-                                var queueOperation = new QueueOperation(selectedElevator, passengers).Execute();
-                                new MoveOperation(selectedElevator).Execute();
+                                    if (!selectedElevators.Any(i => i.ItemId == queuedElevator.ItemId))
+                                        selectedElevators.Add(queuedElevator);
+                                    else
+                                        selectedElevators[selectedElevators.IndexOf(queuedElevator)] = queuedElevator;
+                                });
+
+                                selectedElevators.ForEach(elevator =>{ new MoveOperation(elevator).Execute(); });
                             }
-
                             break;
 
                         case "2":
@@ -218,12 +226,11 @@ internal class Program
                                 if (!elevator.Passengers.Any())
                                     continue;
 
-                                int index = 1;
                                 int destinationFloorNo = int.MinValue;
                                 elevator.Passengers.ForEach(passenger =>
                                 {
                                     Console.WriteLine();
-                                    Console.Write($"Set the destination for passenger number #{index} : ");
+                                    Console.Write($"The passenger is at floor {passenger.FromFloor.FloorNo} and wants to go {passenger.Direction}. Please set destination : ");
                                     var result = int.TryParse(Console.ReadLine(), out destinationFloorNo);
                                     if (result)
                                     {
@@ -231,8 +238,6 @@ internal class Program
 
                                         if (destinationFloor != null)
                                             passenger.ToFloor = destinationFloor;
-
-                                        index++;
                                     }
                                 });
 
@@ -240,70 +245,79 @@ internal class Program
                             }
                             break;
 
-                        case "3":
+                            case "3":
+                            foreach (IElevator elevator in elevators)
+                            {
+                                Console.WriteLine();
+                                Console.WriteLine($" --------------------------------------------");
+                                Console.WriteLine($"Elevator       : {elevator.ItemId}"); 
+                                Console.WriteLine($"Floor No.      : {elevator.CurrentFloor.FloorNo}");
+                                Console.WriteLine($"Direction      : {elevator.Direction}");
+                                Console.WriteLine($"Max Head Count : {elevator.MaxPassengerLimit}");
+                                Console.WriteLine($"Status         : {elevator.ItemStatus.ToString()}");
+                                Console.WriteLine($"Passengers     : {elevator.Passengers.Count(i=>i.ToFloor != null)}");
+                                Console.WriteLine($"Callers        : {elevator.Passengers.Count(i => i.ToFloor == null)}");
+                                Console.WriteLine($" --------------------------------------------");
+                            }
+                            Console.ReadLine();
+                            break;
+                        case "4":
                         default:
                             return;
                     }
                 }
             }
         }
-        static CallOperation CollectElevatorCallData(IEnumerable<IElevator> elevators, 
-        IList<IFloor> floors, out IFloor? callerFloor,
-        out MovementDirection direction, out int totalPassenger)
+
+        static List<CallOperation> GetCallerData(IEnumerable<IElevator> elevators, int totalPassenger, IList<IFloor> floors, out bool passengerResult)
         {
+            passengerResult = false;
+            List<CallOperation> callers = new List<CallOperation>();
+            MovementDirection direction = MovementDirection.Idle;
+            IFloor? callerFloor;
             int firstFloor = floors[0].FloorNo;
             int lastFloor = floors[floors.Count - 1].FloorNo;
-            callerFloor = null;
-            direction = MovementDirection.Idle;
-            totalPassenger = 0;
-            bool collectData = true;
 
-            while (collectData)
+            for (int i = 1; i <= totalPassenger; i++)
             {
+                Console.WriteLine("------------------------------");
+                Console.WriteLine($"Enter the Passanger #{i} data");
+                Console.WriteLine("------------------------------");
+                
                 int floorNo = 0;
-                Console.Clear();
-                Console.WriteLine("===========================================================");
-                Console.WriteLine("   Enter the caller data and press anykey   ");
-                Console.WriteLine("===========================================================");
-                Console.WriteLine();
-                Console.Write("\r\nSelect an option: ");
-                Console.WriteLine();
-                Console.Write($"Enter your floor number between {firstFloor} and {lastFloor}: ");
+
+                Console.Write($"Enter your current floor number ({firstFloor} and {lastFloor}:) ");
                 bool floorNoResult = int.TryParse(Console.ReadLine(), out floorNo);
 
                 if (!floorNoResult || !(floorNo >= firstFloor && floorNo <= lastFloor))
-                    continue;
+                    break;
 
                 callerFloor = floors.FirstOrDefault(i => i.FloorNo == floorNo);
 
                 if (callerFloor is null)
-                    continue;
+                    break;
 
-                Console.Write("Enter the total number of passengers: ");
-                bool passengerResult = int.TryParse(Console.ReadLine(), out totalPassenger);
 
-                if (!passengerResult || totalPassenger <= 0)
-                    continue;
-
-                Console.Write("Enter the Direction (Up or Down): Press (U or D): ");
+                Console.Write("Enter the direction (Up or Down), Press (U or D): ");
                 string? inputDirection = Console.ReadLine();
 
                 if (string.IsNullOrEmpty(inputDirection))
-                    continue;
+                    break;
 
-                if (inputDirection.ToUpper().Equals("U"))
+                if (inputDirection.ToUpper().Equals("U") || inputDirection.ToUpper().Equals("UP"))
                     direction = MovementDirection.Up;
-                else if (inputDirection.ToUpper().Equals("D"))
+                else if (inputDirection.ToUpper().Equals("D") || inputDirection.ToUpper().Equals("DOWN"))
                     direction = MovementDirection.Down;
                 else
-                    continue;
+                    break;
                 
-                collectData = false;
-
-                return new CallOperation(elevators, callerFloor, direction);
+                callers.Add(new CallOperation(elevators, callerFloor, direction));
             }
 
-            return null;
+            if(callers.Any())
+            passengerResult = true;
+
+            return callers;
         }
     }
 }
