@@ -11,11 +11,14 @@ using SmartBuilding.Core.Dto;
 using SmartBuilding.Services.Elevator.Notification;
 using System.Runtime.Serialization;
 using System.Reflection.Metadata.Ecma335;
+using System.Reflection;
+using System.IO;
 
 internal class Program
 {
     private static void Main(string[] args)
     {
+
         SetupMenu();
 
         void SetupMenu()
@@ -47,23 +50,22 @@ internal class Program
                     building = CollectBuildingData();
                     if (building is null)
                         return true;
-
+                    
                     IBuildingProcessor buildingProcessor = BuildingHelper.GetBuildingProcessor(building);
+                    buildingProcessor.ClearItems();
 
                     IList<IFloor>? floors = null;
 
-                    while (floors == null)
-                        floors = CollectBuildingFloorData();
+                    while(floors == null)
+                    floors = CollectBuildingFloorData();
                     buildingProcessor.AddRange(floors);
 
-                    var itemType = ItemTypeSelector();
+                    IList<IElevator> elevators = CollectElevatorData(floors[0]);
+                    buildingProcessor.AddRange(elevators);
 
-                    bool result  =  BuildItemType(itemType,buildingProcessor, floors[0]);
-      
-                    if(result)
-                        BuildDeviceOperation(buildingProcessor, floors, itemType);
+                    BuildDeviceOperation(buildingProcessor, floors);
 
-                    return result;
+                    return true;
 
                 case "2":
                     return false;
@@ -72,15 +74,15 @@ internal class Program
             }
         }
 
-        static IBuilding CollectBuildingData()
+        static IBuilding? CollectBuildingData()
         {
             Console.Clear();
             Console.WriteLine("===========================================================");
             Console.WriteLine("  Enter the building Information and press anykey   ");
             Console.WriteLine("===========================================================");
             Console.WriteLine();
-            Console.Write("Enter Building Name: ");
-            string name = Console.ReadLine();
+            Console.Write("Enter the Building Name: ");
+            string? name = Console.ReadLine();
 
             if (string.IsNullOrEmpty(name))
                 return null;
@@ -101,13 +103,13 @@ internal class Program
                 Console.WriteLine("   Enter the floor data and press anykey   ");
                 Console.WriteLine("===========================================================");
                 Console.WriteLine();
-                Console.Write("Total No. of basement: ");
+                Console.Write("Enter total number of basement: ");
                 bool basementResult = int.TryParse(Console.ReadLine(), out totalBasement);
 
                 if (!basementResult || totalBasement <= 0)
                     continue;
 
-                Console.Write("Total No. of floors: ");
+                Console.Write("Enter total number of floors: ");
                 bool floorResult = int.TryParse(Console.ReadLine(), out totalFloor);
 
 
@@ -135,7 +137,7 @@ internal class Program
                 Console.WriteLine($"   Enter the elevator data and press anykey   ");
                 Console.WriteLine("===========================================================");
                 Console.WriteLine();                
-                Console.Write("Total No. of elevators: ");
+                Console.Write("Enter the total number of elevators: ");
                 bool elevatorResult = int.TryParse(Console.ReadLine(), out totalElevator);
 
 
@@ -147,7 +149,7 @@ internal class Program
 
                 do
                 {
-                    Console.Write($"Enter the maximum person limit for elevator {index} :");
+                    Console.Write($"Enter the maximum head count limit #{index} :");
                     bool elevatorLimitResult = int.TryParse(Console.ReadLine(), out elevatorLimit);
 
                     if (!elevatorLimitResult || elevatorLimit <= 0)
@@ -163,122 +165,83 @@ internal class Program
             return elevators;
         }
 
-        static ItemType ItemTypeSelector()
+        static void BuildDeviceOperation(IBuildingProcessor buildingProcessor, IList<IFloor> floors)
         {
-            Console.Clear();
-            Console.WriteLine("==============================================");
-            Console.WriteLine($"               Select Device                 ");
-            Console.WriteLine("==============================================");
-            Console.WriteLine();
-            Console.Write("\r\nSelect an option: \n");
-            int index = 1;
-            foreach (var itemType in Enum.GetNames(typeof(ItemType)))
+            IEnumerable<IElevator> elevators = buildingProcessor.GetAvailableItems<IElevator>();
+
+            if (elevators.Any() && floors.Any())
             {
-                Console.WriteLine($"Press #{index} for {itemType}");
-                index++;    
-            }
+                while (true)
+                {
 
-            switch (Console.ReadLine())
-            {
-                case "1":
-                    return (ItemType)Enum.Parse(typeof(ItemType), "0");
+                    Console.Clear();
+                    Console.WriteLine("==============================================");
+                    Console.WriteLine($"         Select Elevator Operation           ");
+                    Console.WriteLine("==============================================");
+                    Console.WriteLine("Press #1 to call elevator");
+                    Console.WriteLine("Press #2 to go your destination");
+                    Console.WriteLine("Press #3 to exit");
+                    Console.Write("\r\nSelect an option: ");
 
-                case "2":
-                    return (ItemType)Enum.Parse(typeof(ItemType), "1");
-
-                case "3":
-                    return (ItemType)Enum.Parse(typeof(ItemType), "2");
-
-                default:
-                    return ItemType.Elevator;
-
-            }
-        }
-
-        static bool BuildItemType(ItemType itemType, IBuildingProcessor buildingProcessor, IFloor floor)
-        {
-            switch (itemType)
-            {
-                case ItemType.Elevator:
-                    var elevators = CollectElevatorData(floor);
-                    buildingProcessor.AddRange(elevators);
-                    return true;
-
-                default:
-                    return false;
-            }
-        }
-
-        static void BuildDeviceOperation(IBuildingProcessor buildingProcessor, IList<IFloor>? floors, ItemType itemType)
-        {
-            switch (itemType)
-            {
-                case ItemType.Elevator:
-
-                    IEnumerable<IElevator> elevators = buildingProcessor.GetAvailableItems<IElevator>();
-
-                    if (elevators.Any() && floors.Any())
+                    switch (Console.ReadLine())
                     {
-                        Console.Clear();
-                        Console.WriteLine("==============================================");
-                        Console.WriteLine($"         Select Elevator Operation           ");
-                        Console.WriteLine("==============================================");
-                        Console.WriteLine("Press #1 to call elevator");
-                        Console.Write("\r\nSelect an option: ");
+                        case "1":
+                            IFloor callerFloor;
+                            MovementDirection direction;
+                            int noOfPassengers = 0;
+                            var passengers = new List<IElevatorPassenger>();
 
-                        switch (Console.ReadLine())
-                        {
-                            case "1":
-                                IFloor callerFloor;
-                                MovementDirection direction;
-                                int noOfPassengers = 0;
-                                var passengers = new List<IElevatorPassenger>();
+                            CallOperation caller = CollectElevatorCallData(elevators, floors,
+                                out callerFloor, out direction, out noOfPassengers);
+                            var selectedElevator = caller.Execute();
 
-                                CallOperation caller = CollectElevatorCallData(elevators, floors, 
-                                    out callerFloor, out direction, out noOfPassengers);
-                                var selectedElevator = caller.Execute();
-
-                                if (callerFloor != null && noOfPassengers > 0)
+                            if (callerFloor != null && noOfPassengers > 0)
+                            {
+                                for (int i = 1; i <= noOfPassengers; i++)
                                 {
-                                    for (int i = 1; i <= noOfPassengers; i++)
-                                    {
-                                        var passenger = new ElevatorPassenger(selectedElevator, callerFloor, null, direction);
-                                        passengers.Add(passenger);
-                                    }
-
-                                    var queueOperation = new QueueOperation(selectedElevator, passengers).Execute();
-                                    new MoveOperation(selectedElevator).Execute();
+                                    var passenger = new ElevatorPassenger(selectedElevator, callerFloor, null, direction);
+                                    passengers.Add(passenger);
                                 }
-                                
-                                break;
-                            default:
-                                break;
-                        }
+
+                                var queueOperation = new QueueOperation(selectedElevator, passengers).Execute();
+                                new MoveOperation(selectedElevator).Execute();
+                            }
+
+                            break;
+
+                        case "2":
+                            foreach (IElevator elevator in elevators)
+                            {
+                                if (!elevator.Passengers.Any())
+                                    continue;
+
+                                int index = 1;
+                                int destinationFloorNo = int.MinValue;
+                                elevator.Passengers.ForEach(passenger =>
+                                {
+                                    Console.WriteLine();
+                                    Console.Write($"Set the destination for passenger number #{index} : ");
+                                    var result = int.TryParse(Console.ReadLine(), out destinationFloorNo);
+                                    if (result)
+                                    {
+                                        var destinationFloor = floors.FirstOrDefault(i => i.FloorNo == destinationFloorNo);
+
+                                        if (destinationFloor != null)
+                                            passenger.ToFloor = destinationFloor;
+
+                                        index++;
+                                    }
+                                });
+
+                                new MoveOperation(elevator).Execute();
+                            }
+                            break;
+
+                        case "3":
+                        default:
+                            return;
                     }
-
-                    //List<CallOperation> callRequests = new List<CallOperation>();
-                    //callRequests.Add(new CallOperation(elevators, floors[33], MovementDirection.Down));//30
-                    //callRequests.Add(new CallOperation(elevators, floors[7], MovementDirection.Down));//4
-                    //callRequests.Add(new CallOperation(elevators, floors[2], MovementDirection.Down));//-1
-                    //callRequests.Add(new CallOperation(elevators, floors[14], MovementDirection.Down));//11
-
-                    //List<IElevator> selectedElevators = new List<IElevator>();
-
-                    //callRequests.ForEach(callRequest =>
-                    //{
-                    //    IElevator selectedElevator = callRequest.Execute();
-                    //    QueuePassenger(selectedElevator, callRequest.CallerFloor, callRequest.CallerDirection);
-
-                    //    if (!selectedElevators.Any(i => i.ItemId == selectedElevator.ItemId))
-                    //        selectedElevators.Add(selectedElevator);
-                    //});
-
-                    //selectedElevators.ForEach(elevator =>
-                    //{
-                    //    new MoveOperation(elevator).Execute();
-                    //});
-
-                    break;
+                }
             }
         }
         static CallOperation CollectElevatorCallData(IEnumerable<IElevator> elevators, 
@@ -297,12 +260,12 @@ internal class Program
                 int floorNo = 0;
                 Console.Clear();
                 Console.WriteLine("===========================================================");
-                Console.WriteLine("   Enter the calling data and press anykey   ");
+                Console.WriteLine("   Enter the caller data and press anykey   ");
                 Console.WriteLine("===========================================================");
                 Console.WriteLine();
                 Console.Write("\r\nSelect an option: ");
                 Console.WriteLine();
-                Console.Write($"Enter your current Floor No.: between {firstFloor} and {lastFloor}: ");
+                Console.Write($"Enter your floor number between {firstFloor} and {lastFloor}: ");
                 bool floorNoResult = int.TryParse(Console.ReadLine(), out floorNo);
 
                 if (!floorNoResult || !(floorNo >= firstFloor && floorNo <= lastFloor))
@@ -313,14 +276,14 @@ internal class Program
                 if (callerFloor is null)
                     continue;
 
-                Console.Write("Enter the total No. of passengers: ");
+                Console.Write("Enter the total number of passengers: ");
                 bool passengerResult = int.TryParse(Console.ReadLine(), out totalPassenger);
 
                 if (!passengerResult || totalPassenger <= 0)
                     continue;
 
                 Console.Write("Enter the Direction (Up or Down): Press (U or D): ");
-                string inputDirection = Console.ReadLine();
+                string? inputDirection = Console.ReadLine();
 
                 if (string.IsNullOrEmpty(inputDirection))
                     continue;
@@ -339,61 +302,5 @@ internal class Program
 
             return null;
         }
-
-        static void QueuePassenger(IElevator elevator, IFloor callerFloor, MovementDirection callerMove)
-        {
-            var passengers = new List<IElevatorPassenger>();
-            var passenger = new ElevatorPassenger(elevator, callerFloor, null, callerMove);
-            passengers.Add(passenger);
-
-            var queueOperation = new QueueOperation(elevator, passengers).Execute();
-        }
-
-       
-        //Observable<ElevatorUpdateDto> observable = new Observable<ElevatorUpdateDto>();
-
-        //IBuilding building = BuildingHelper.SetUpBuiling("Plaza Hotel");
-        //IBuildingProcessor buildingProcessor = BuildingHelper.GetBuildingProcessor(building);
-
-        //IList<IFloor> floors = BuildingHelper.SetupBuildingFloors(3, 35);
-        //buildingProcessor.AddRange<IFloor>(floors);
-
-        //buildingProcessor.Add<IElevator>(new Elevator("E01", floors[8], 7, MovementDirection.Down)); //5
-        ////buildingProcessor.Add<IElevator>(new Elevator("E02", floors[17], 9, MovementDirection.Idle));//14
-        ////buildingProcessor.Add<IElevator>(new Elevator("E03", floors[38], 12, MovementDirection.Down));//35
-        ////buildingProcessor.Add<IElevator>(new Elevator("E04", floors[23], 4, MovementDirection.Up));//20
-
-        //IEnumerable<IElevator> elevators = buildingProcessor.GetAvailableItems<IElevator>();
-
-        //if (!elevators.Any())
-        //    throw new NullReferenceException("No available elevator.");
-
-        //List<CallOperation> callRequests = new List<CallOperation>();
-
-        //callRequests.Add(new CallOperation(elevators, floors[33], MovementDirection.Down));//30
-        //callRequests.Add(new CallOperation(elevators, floors[7], MovementDirection.Down));//4
-        //callRequests.Add(new CallOperation(elevators, floors[2], MovementDirection.Down));//-1
-        //callRequests.Add(new CallOperation(elevators, floors[14], MovementDirection.Down));//11
-
-        //List<IElevator> selectedElevators = new List<IElevator>();
-
-        //callRequests.ForEach(callRequest =>
-        //{
-        //    IElevator selectedElevator = callRequest.Execute();
-        //    QueuePassenger(selectedElevator, callRequest.CallerFloor, callRequest.CallerDirection);
-
-        //    if (!selectedElevators.Any(i => i.ItemId == selectedElevator.ItemId))
-        //        selectedElevators.Add(selectedElevator);
-        //});
-
-        //selectedElevators.ForEach(elevator =>
-        //{
-        //    new MoveOperation(elevator).Execute();
-        //});
-
-        //Console.ReadLine();
-
-
     }
-
 }

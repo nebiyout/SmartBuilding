@@ -9,5 +9,7 @@
         IEnumerable<T> GetAll<T>() where T : IBuildingItem;
 
         IEnumerable<T> GetAvailableItems<T>() where T : IBuildingItem;
+
+        void ClearItems();
     }
 }

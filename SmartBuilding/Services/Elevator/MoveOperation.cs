@@ -162,7 +162,7 @@ namespace SmartBuilding.Services.Elevator
 
         private void LoadPassengers()
         {
-            new LoadOperation(elevator).Execute();
+            new LoadOperation(elevator, floors).Execute();
         }
 
         private void InitiateElevatorStatus()

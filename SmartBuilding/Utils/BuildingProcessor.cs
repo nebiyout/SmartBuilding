@@ -42,6 +42,11 @@ namespace SmartBuilding.Utils
             return building.BuildingItems.OfType<T>().Where(i => i.ItemStatus == ItemStatus.Available);
         }
 
+        public void ClearItems()
+        {
+            building?.BuildingItems?.Clear();
+        }
+
         private void Validate<T>(T t) where T : IBuildingItem
         {
             if (t == null)
