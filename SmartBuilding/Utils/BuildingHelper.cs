@@ -13,7 +13,7 @@ namespace SmartBuilding.Utils
 
         public static IBuilding SetUpBuiling(string buildName)
         {
-            IBuilding building = new Building("Plaza Hotel");
+            IBuilding building = new Building(buildName);
             return building;
         }
 

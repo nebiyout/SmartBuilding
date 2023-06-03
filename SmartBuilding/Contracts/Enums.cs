@@ -15,8 +15,8 @@
 
     public enum ItemType
     {
-        Floor,
         Elevator,
+        Floor,
         AC
     }
 }
