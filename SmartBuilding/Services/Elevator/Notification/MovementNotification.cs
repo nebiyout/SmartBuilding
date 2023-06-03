@@ -17,8 +17,6 @@ namespace SmartBuilding.Services.Elevator.Notification
             this.display = display;
         }
 
-        private static IList<ElevatorUpdateDto> elevatorMovements = new List<ElevatorUpdateDto>();
-
         public void OnNext(ElevatorUpdateDto value)
         {
             Thread.Sleep(250);

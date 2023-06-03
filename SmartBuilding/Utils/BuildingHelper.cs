@@ -9,18 +9,6 @@ namespace SmartBuilding.Utils
 {
     public static class BuildingHelper
     {
-        public static IDisplay display;
-        public static IDisplay GetDisplay
-        {
-            get
-            {
-                if (display == null)
-                    display = Activator.CreateInstance<ConsoleDisplay>();
-                
-                return display;
-            }
-        }
-
         private static IBuildingProcessor? buildingProcessor;
 
         public static IBuilding SetUpBuiling(string buildName)

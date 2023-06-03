@@ -15,8 +15,6 @@ namespace SmartBuilding.Services.Elevator.Notification
 {
     public static class NotificationManager<T> where T : class
     {
-        
-
         private static List<Observable<T>> observables = new List<Observable<T>>();
 
         private static Observable<T> GetObservable()

@@ -26,20 +26,20 @@ namespace SmartBuilding.Services.Elevator
             minFloor = floors.Min(i => i.FloorNo);
             maxFloor = floors.Min(i => i.FloorNo);
             
-            NotificationManager<ElevatorUpdateDto>.Subscribe(new MovementNotification(BuildingHelper.GetDisplay));
+            NotificationManager<ElevatorUpdateDto>.Subscribe(new MovementNotification(CommonHelper.GetDisplay));
         }
 
 
         public IElevator Execute()
         {
             //RunMoveTask();
-            Task.Run(async () => await RunMoveTask()).ConfigureAwait(false);
+            Task.Run(() => RunMoveTask()).ConfigureAwait(false);
 
             return elevator;
         }
         private static Object obj = new object();
 
-        private async Task RunMoveTask()
+        private void RunMoveTask()
         {
             lock (obj)
             {

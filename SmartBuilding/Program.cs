@@ -17,7 +17,7 @@ Console.WriteLine();
 
 SetupBuilding();
 
-async void SetupBuilding()
+void SetupBuilding()
 {
     Observable<ElevatorUpdateDto> observable = new Observable<ElevatorUpdateDto>();
 
@@ -55,7 +55,7 @@ async void SetupBuilding()
             selectedElevators.Add(selectedElevator);
     });
 
-    selectedElevators.ForEach(async elevator =>
+    selectedElevators.ForEach(elevator =>
     {
         new MoveOperation(elevator).Execute();
     });
