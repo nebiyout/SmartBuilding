@@ -78,7 +78,7 @@ internal class Program
         {
             Console.Clear();
             Console.WriteLine("===========================================================");
-            Console.WriteLine("  Enter the building Information and press anykey   ");
+            Console.WriteLine("  Enter the building information and press anykey   ");
             Console.WriteLine("===========================================================");
             Console.WriteLine();
             Console.Write("Enter the Building Name: ");
@@ -109,7 +109,7 @@ internal class Program
                 if (!basementResult || totalBasement <= 0)
                     continue;
 
-                Console.Write("Enter total number of floors: ");
+                Console.Write("Enter total number of floor: ");
                 bool floorResult = int.TryParse(Console.ReadLine(), out totalFloor);
 
 
@@ -137,7 +137,7 @@ internal class Program
                 Console.WriteLine($"   Enter the elevator data and press anykey   ");
                 Console.WriteLine("===========================================================");
                 Console.WriteLine();                
-                Console.Write("Enter the total number of elevators: ");
+                Console.Write("Enter the total number of elevator: ");
                 bool elevatorResult = int.TryParse(Console.ReadLine(), out totalElevator);
 
 
@@ -175,11 +175,14 @@ internal class Program
                 {
 
                     Console.Clear();
-                    Console.WriteLine("==============================================");
-                    Console.WriteLine($"         Select Elevator Operation           ");
-                    Console.WriteLine("==============================================");
+                    Console.WriteLine("=============================================");
+                    Console.WriteLine($"         Select Elevator Operation          ");
+                    Console.WriteLine("============================================="); 
+                    Console.WriteLine($" Minimum Floor No. ({floors[0].FloorNo})");
+                    Console.WriteLine($" Maximum Floor No. ({floors[floors.Count-1].FloorNo})");
+                    Console.WriteLine($" ------------------------------------------");
                     Console.WriteLine("Press #1 to call elevator");
-                    Console.WriteLine("Press #2 to go your destination");
+                    Console.WriteLine($"Press #2 to go to your destination Pending({elevators.SelectMany(i=>i.Passengers).Count(i=>i.Waiting == true || (i.Waiting == false && i.ToFloor == null)) })" );
                     Console.WriteLine("Press #3 to exit");
                     Console.Write("\r\nSelect an option: ");
 

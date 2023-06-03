@@ -32,7 +32,6 @@ namespace SmartBuilding.Services.Elevator
 
         public IElevator Execute()
         {
-            //RunMoveTask();
             Task.Run(() => RunMoveTask()).ConfigureAwait(false);
 
             return elevator;
@@ -55,19 +54,19 @@ namespace SmartBuilding.Services.Elevator
 
                     if (elevator.Direction == MovementDirection.Up)
                     {
-                        int callersMax = GetCallerMaxValue();
-                        int passengersMax = GetPassengerMaxValue();
+                        int farCaller = GetFarCaller();
+                        int farPassanger = GetFarPassenger();
 
-                        int maxJobIndex = Math.Max(callersMax, passengersMax);
+                        int farJobIndex = Math.Max(farCaller, farPassanger);
                         int startJobIndex = elevator.CurrentFloor.FloorNo;
-                        while (startJobIndex <= maxJobIndex)
+                        while (startJobIndex <= farJobIndex)
                         {
                             OffLoadPassengers();
                             LoadPassengers();
                             BroadCast();
 
                             var nextFloor = floors.FirstOrDefault(i => i.FloorNo == startJobIndex + 1);
-                            if (nextFloor != null && startJobIndex + 1 <= maxJobIndex)
+                            if (nextFloor != null && startJobIndex + 1 <= farJobIndex)
                                 elevator.CurrentFloor = nextFloor;
 
                             startJobIndex++;
@@ -77,19 +76,19 @@ namespace SmartBuilding.Services.Elevator
                     }
                     else if (elevator.Direction == MovementDirection.Down)
                     {
-                        int callersMin = GetCallerMinValue();
-                        int passengersMin = GetPassengerMinValue();
+                        int nearCaller = GetNearCaller();
+                        int nearPassanger = GetNearPassenger();
 
-                        int minJobIndex = Math.Min(callersMin, passengersMin);
+                        int nearJobIndex = Math.Min(nearCaller, nearPassanger);
                         int startJobIndex = elevator.CurrentFloor.FloorNo;
-                        while (startJobIndex >= minJobIndex)
+                        while (startJobIndex >= nearJobIndex)
                         {
                             OffLoadPassengers();
                             LoadPassengers();
                             BroadCast();
 
                             var prevFloor = floors.FirstOrDefault(i => i.FloorNo == startJobIndex - 1);
-                            if (prevFloor != null && startJobIndex - 1 >= minJobIndex)
+                            if (prevFloor != null && startJobIndex - 1 >= nearJobIndex)
                                 elevator.CurrentFloor = prevFloor;
 
                             startJobIndex--;
@@ -101,7 +100,7 @@ namespace SmartBuilding.Services.Elevator
             }
         }
 
-    private void BroadCast()
+        private void BroadCast()
         {
             NotificationManager<ElevatorUpdateDto>.Notify(new ElevatorUpdateDto()
             {
@@ -112,44 +111,44 @@ namespace SmartBuilding.Services.Elevator
             });
         }
 
-        private int GetCallerMaxValue()
+        private int GetFarCaller()
         {
-            int callersMax = int.MinValue;
+            int farCaller = int.MinValue;
             var callers = elevator.Passengers.Where(i => i.ToFloor == null && i.FromFloor.FloorNo >= elevator.CurrentFloor.FloorNo && i.Waiting == true);
             if (callers.Any())
-                callersMax = callers.Max(i => i.FromFloor.FloorNo);
+                farCaller = callers.Max(i => i.FromFloor.FloorNo);
 
-            return callersMax;
+            return farCaller;
         }
 
-        private int GetPassengerMaxValue()
+        private int GetFarPassenger()
         {
-            int passengersMax = int.MinValue;
+            int farPassenger = int.MinValue;
             var passengers = elevator.Passengers.Where(i => i.ToFloor != null && i.ToFloor.FloorNo >= elevator.CurrentFloor.FloorNo && i.Waiting == false);
             if (passengers.Any())
-                passengersMax = passengers.Max(i => i.ToFloor.FloorNo);
+                farPassenger = passengers.Max(i => i.ToFloor.FloorNo);
 
-            return passengersMax;
+            return farPassenger;
         }
 
-        private int GetCallerMinValue()
+        private int GetNearCaller()
         {
-            int callersMin = int.MaxValue;
+            int nearCaller = int.MaxValue;
             var callers = elevator.Passengers.Where(i => i.ToFloor == null && i.FromFloor.FloorNo <= elevator.CurrentFloor.FloorNo && i.Waiting == true);
             if (callers.Any())
-                callersMin = callers.Min(i => i.FromFloor.FloorNo);
+                nearCaller = callers.Min(i => i.FromFloor.FloorNo);
 
-            return callersMin;
+            return nearCaller;
         }
 
-        private int GetPassengerMinValue()
+        private int GetNearPassenger()
         {
-            int passengersMin = int.MaxValue;
+            int nearPassenger = int.MaxValue;
             var passengers = elevator.Passengers.Where(i => i.ToFloor != null && i.ToFloor.FloorNo <= elevator.CurrentFloor.FloorNo && i.Waiting == false);
             if (passengers.Any())
-                passengersMin = passengers.Min(i => i.ToFloor.FloorNo);
+                nearPassenger = passengers.Min(i => i.ToFloor.FloorNo);
 
-            return passengersMin;
+            return nearPassenger;
         }
 
         private void OffLoadPassengers()

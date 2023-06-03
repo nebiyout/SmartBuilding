@@ -130,44 +130,44 @@ namespace SmartBuilding.Services.Elevator
             }
             else
             {
-                var last = 0;
-                var first = 0;
+                var near = 0; 
+                var far = 0;
 
-                var lastOrder = passangers.Where(i => i.ToFloor != null);
-                if (lastOrder.Any())
-                    last = lastOrder.Max(i => i.ToFloor.FloorNo);
+                var farOrder = passangers.Where(i => i.ToFloor != null);
+                if (farOrder.Any())
+                    far = farOrder.Max(i => i.ToFloor.FloorNo);
 
-                var firstOrder = passangers.Where(i => i.ToFloor != null);
+                var nearOrder = passangers.Where(i => i.ToFloor != null);
 
-                if (firstOrder.Any())
-                    first = firstOrder.Min(i => i.ToFloor.FloorNo);
+                if (nearOrder.Any())
+                    near = nearOrder.Min(i => i.ToFloor.FloorNo);
 
                 if (elevator.Direction == MovementDirection.Up)
                 {
                     if (callerDirection == MovementDirection.Up)
                     {
-                        minDistance = Math.Abs(last - elevator.CurrentFloor.FloorNo);
-                        minDistance += Math.Abs(last - first);
-                        minDistance += Math.Abs(callerFloor.FloorNo - first);
+                        minDistance = Math.Abs(far - elevator.CurrentFloor.FloorNo);
+                        minDistance += Math.Abs(far - near);
+                        minDistance += Math.Abs(callerFloor.FloorNo - near);
                     }
                     else if (callerDirection == MovementDirection.Down)
                     {
-                        minDistance = Math.Abs(last - elevator.CurrentFloor.FloorNo);
-                        minDistance += Math.Abs(last - callerFloor.FloorNo);
+                        minDistance = Math.Abs(far - elevator.CurrentFloor.FloorNo);
+                        minDistance += Math.Abs(far - callerFloor.FloorNo);
                     }
                 }
                 else if (elevator.Direction == MovementDirection.Down)
                 {
                     if (callerDirection == MovementDirection.Down)
                     {
-                        minDistance = Math.Abs(elevator.CurrentFloor.FloorNo - first);
-                        minDistance += Math.Abs(last - first);
-                        minDistance += Math.Abs(last - callerFloor.FloorNo);
+                        minDistance = Math.Abs(elevator.CurrentFloor.FloorNo - near);
+                        minDistance += Math.Abs(far - near);
+                        minDistance += Math.Abs(far - callerFloor.FloorNo);
                     }
                     else if (callerDirection == MovementDirection.Up)
                     {
-                        minDistance = Math.Abs(elevator.CurrentFloor.FloorNo - first);
-                        minDistance += Math.Abs(callerFloor.FloorNo - first);
+                        minDistance = Math.Abs(elevator.CurrentFloor.FloorNo - near);
+                        minDistance += Math.Abs(callerFloor.FloorNo - near);
                     }
                 }
             }
