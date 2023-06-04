@@ -14,6 +14,8 @@ namespace SmartBuilding.Utils
     {
         public delegate void LoadEventHandler(IElevator elevator, IList<IFloor> floors,IElevatorPassenger passenger);
 
+        public delegate void MessageEventHandler(string message);
+
         public static IDisplay? display;
 
         public static IDisplay GetDisplay

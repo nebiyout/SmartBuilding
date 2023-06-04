@@ -46,9 +46,16 @@ namespace SmartBuilding.Services.Elevator
         {
             lock (obj)
             {
+                bool maxedOut = false;
                 while (true)
                 {
                     if (elevator.Passengers.All(i => i.Waiting == false) && elevator.Passengers.All(i => i.Waiting == false && i.ToFloor == null))
+                    {
+                        elevator.ResetStatus();
+                        break;
+                    }
+
+                    if (maxedOut && elevator.Passengers.All(i => i.Waiting))
                     {
                         elevator.ResetStatus();
                         break;
@@ -66,8 +73,11 @@ namespace SmartBuilding.Services.Elevator
                         while (startJobIndex <= farJobIndex)
                         {
                             OffLoadPassengers();
-                            LoadPassengers();
-                            BroadCast();
+                            if (!maxedOut)
+                            {
+                                maxedOut = LoadPassengers();
+                                BroadCast();
+                            }
 
                             var nextFloor = floors.FirstOrDefault(i => i.FloorNo == startJobIndex + 1);
                             if (nextFloor != null && startJobIndex + 1 <= farJobIndex)
@@ -88,8 +98,11 @@ namespace SmartBuilding.Services.Elevator
                         while (startJobIndex >= nearJobIndex)
                         {
                             OffLoadPassengers();
-                            LoadPassengers();
-                            BroadCast();
+                            if (!maxedOut)
+                            {
+                                maxedOut = LoadPassengers();
+                                BroadCast();
+                            }
 
                             var prevFloor = floors.FirstOrDefault(i => i.FloorNo == startJobIndex - 1);
                             if (prevFloor != null && startJobIndex - 1 >= nearJobIndex)
@@ -99,7 +112,6 @@ namespace SmartBuilding.Services.Elevator
                         }
                         elevator.Direction = MovementDirection.Up;
                     }
-
                 }
             }
         }
@@ -163,9 +175,12 @@ namespace SmartBuilding.Services.Elevator
             new UnloadOperation(elevator, funcDepartingPassengers).Execute();
         }
 
-        private void LoadPassengers()
+        private bool LoadPassengers()
         {
-           new LoadOperation(elevator, floors).Execute();
+            var loadOperation = new LoadOperation(elevator, floors);
+            loadOperation.Execute();
+
+            return loadOperation.MaxedOut;
         }
 
         private void InitiateElevatorStatus()

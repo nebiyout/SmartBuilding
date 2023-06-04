@@ -16,7 +16,8 @@ namespace SmartBuilding.Services.Elevator
         private readonly IElevator elevator;
         private readonly IEnumerable<IFloor> floors;
         public static event LoadEventHandler loadEvent;
-
+        public static event MessageEventHandler messageEvent;
+        public bool MaxedOut { get; set; }
         public LoadOperation(IElevator elevator, IEnumerable<IFloor> floors)
         {
             this.elevator = elevator;
@@ -37,13 +38,24 @@ namespace SmartBuilding.Services.Elevator
 
             if (passengersGotToElevator.Any())
             {
-                foreach (IElevatorPassenger passenger in passengersGotToElevator)
+                int totalPassengers = passengersGotToElevator.Count() + elevator.Passengers.Count(i => i.Waiting == false);
+                if (totalPassengers > elevator.MaxPassengerLimit)
                 {
-                    passenger.Waiting = false;
-                    loadEvent?.Invoke(elevator, floors.ToList(), passenger);
+                    MaxedOut = true;
+                    string message = "Elevator (" + elevator.ItemId + ") has reached its maximum passanger limit.";
+                    messageEvent?.Invoke(message);
+                }
+                else
+                {
+                    MaxedOut = false;
+                    foreach (IElevatorPassenger passenger in passengersGotToElevator)
+                    {
+                        passenger.Waiting = false;
+                        loadEvent?.Invoke(elevator, floors.ToList(), passenger);
+                    }
                 }
             }
-            
+
             return elevator;
         }
     }
