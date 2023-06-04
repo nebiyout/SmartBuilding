@@ -5,7 +5,9 @@ using SmartBuilding.Core;
 using SmartBuilding.Core.Dto;
 using SmartBuilding.Services.Elevator.Notification;
 using SmartBuilding.Utils.PubSub;
+using System;
 using System.Threading.Tasks.Dataflow;
+using static SmartBuilding.Utils.CommonHelper;
 
 namespace SmartBuilding.Services.Elevator
 {
@@ -13,6 +15,7 @@ namespace SmartBuilding.Services.Elevator
     {
         private readonly IElevator elevator;
         private readonly IEnumerable<IFloor> floors;
+        public static event LoadEventHandler loadEvent;
 
         public LoadOperation(IElevator elevator, IEnumerable<IFloor> floors)
         {
@@ -34,16 +37,11 @@ namespace SmartBuilding.Services.Elevator
 
             if (passengersGotToElevator.Any())
             {
-                //if(elevator.Passengers.Count(i=>i.Waiting == false) + passengersGotToElevator.Count() > elevator.MaxPassengerLimit)
-                //{
-                //    Console.
-                //}
-               
                 foreach (IElevatorPassenger passenger in passengersGotToElevator)
                 {
                     passenger.Waiting = false;
+                    loadEvent?.Invoke(elevator, floors.ToList(), passenger);
                 }
-
             }
             
             return elevator;

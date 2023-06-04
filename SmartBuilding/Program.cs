@@ -14,12 +14,39 @@ using System.Reflection.Metadata.Ecma335;
 using System.Reflection;
 using System.IO;
 using System.ComponentModel;
+using System.Diagnostics;
 
 internal class Program
 {
     private static void Main(string[] args)
     {
+        LoadOperation.loadEvent += LoadOperation_loadEvent;
         SetupMenu();
+    }
+
+    private static void LoadOperation_loadEvent(IElevator elevator, IList<IFloor> floors, IElevatorPassenger passenger)
+    {
+        int firstFloor = floors[0].FloorNo;
+        int lastFloor = floors[floors.Count - 1].FloorNo;
+        int floorNo = 0;
+        IFloor? elevatorFloor;
+        Console.WriteLine();
+        Console.WriteLine("================Loading Passenger================");
+        Console.WriteLine($"Floor No. between {firstFloor} and {lastFloor}");
+        Console.Write($"Enter destination floor for the passenger at floor No.#{passenger.FromFloor.FloorNo}: ");
+
+        bool floorNoResult = int.TryParse(Console.ReadLine(), out floorNo);
+
+
+        if (!floorNoResult || !(floorNo >= firstFloor && floorNo <= lastFloor))
+            return;
+
+        elevatorFloor = floors.FirstOrDefault(i => i.FloorNo == floorNo);
+
+        if (elevatorFloor is null)
+            return;
+
+        passenger.ToFloor = floors.FirstOrDefault(i => i.FloorNo == floorNo);
     }
 
     private static void SetupMenu()
@@ -160,7 +187,7 @@ internal class Program
                 Console.WriteLine("------------------------------");
 
                 int floorNo = 0;
-                Console.Write($"Enter elevator starting floor number ({firstFloor} and {lastFloor}:) ");
+                Console.Write($"Enter the initial elevator floor No. between ({firstFloor} and {lastFloor}:) ");
                 bool floorNoResult = int.TryParse(Console.ReadLine(), out floorNo);
 
                 if (!floorNoResult || !(floorNo >= firstFloor && floorNo <= lastFloor))
@@ -171,7 +198,7 @@ internal class Program
                 if (elevatorFloor is null)
                     break;
 
-                Console.Write($"Enter the maximum head count limit:");
+                Console.Write($"Enter the elevator maximum head count :");
                 bool elevatorLimitResult = int.TryParse(Console.ReadLine(), out elevatorLimit);
 
                 if (!elevatorLimitResult || elevatorLimit <= 0)
@@ -200,8 +227,6 @@ internal class Program
                 Console.WriteLine("=============================================");
                 Console.WriteLine($"         Select Elevator Operation          ");
                 Console.WriteLine("=============================================");
-                Console.WriteLine($" Min Floor No. ({floors[0].FloorNo})  Max Floor No. ({floors[floors.Count - 1].FloorNo})");
-                Console.WriteLine($" --------------------------------------------");
                 Console.WriteLine($"Press #1 to call elevator");
                 Console.WriteLine($"Press #2 to move passangers, Pending({elevators.SelectMany(i => i.Passengers).Count(i => i.Waiting == true || (i.Waiting == false && i.ToFloor == null))})");
                 Console.WriteLine($"Press #3 to view elevators status");
@@ -262,7 +287,7 @@ internal class Program
 
             int floorNo = 0;
 
-            Console.Write($"Enter your current floor number ({firstFloor} and {lastFloor}:) ");
+            Console.Write($"Enter your current floor number between ({firstFloor} and {lastFloor}): ");
             bool floorNoResult = int.TryParse(Console.ReadLine(), out floorNo);
 
             if (!floorNoResult || !(floorNo >= firstFloor && floorNo <= lastFloor))
@@ -274,7 +299,7 @@ internal class Program
                 break;
 
 
-            Console.Write("Enter the direction you would like to go (Up or Down), Press (U or D): ");
+            Console.Write("Enter the your direction Press U or D :");
             string? inputDirection = Console.ReadLine();
 
             if (string.IsNullOrEmpty(inputDirection))
@@ -337,7 +362,7 @@ internal class Program
 
             if (elevator.Passengers.Count(i => i.Waiting == false) > elevator.MaxPassengerLimit)
             {
-                Console.WriteLine($"Elevator max limit reached {elevator.MaxPassengerLimit}");
+                Console.WriteLine($"Elevator limit reached {elevator.MaxPassengerLimit}");
                 Console.ReadLine();
                 continue;
             }
@@ -346,7 +371,7 @@ internal class Program
             elevator.Passengers.ForEach(passenger =>
             {
                 Console.WriteLine();
-                Console.Write($"The passenger is at floor {passenger.FromFloor.FloorNo} and wants to go {passenger.Direction}. Please set destination : ");
+                Console.Write($"The passenger is at {passenger.FromFloor.FloorNo} floor and wants to go {passenger.Direction}. Please set destination : ");
                 var result = int.TryParse(Console.ReadLine(), out destinationFloorNo);
                 if (result)
                 {
@@ -360,7 +385,7 @@ internal class Program
             new MoveOperation(elevator).Execute();
         }
     }
-    
+
     private static void ShowElevatorStatus(IEnumerable<IElevator> elevators)
     {
         foreach (IElevator elevator in elevators)

@@ -6,7 +6,9 @@ using SmartBuilding.Services.Display;
 using SmartBuilding.Services.Elevator.Notification;
 using SmartBuilding.Utils;
 using SmartBuilding.Utils.PubSub;
+using System;
 using System.Threading.Tasks.Dataflow;
+using static SmartBuilding.Utils.CommonHelper;
 
 namespace SmartBuilding.Services.Elevator
 {
@@ -16,6 +18,7 @@ namespace SmartBuilding.Services.Elevator
         private readonly IEnumerable<IFloor> floors;
         private readonly int minFloor;
         private readonly int maxFloor;
+        private static Object obj = new object();
 
         public MoveOperation(IElevator elevator)
         {
@@ -32,11 +35,12 @@ namespace SmartBuilding.Services.Elevator
 
         public IElevator Execute()
         {
-            Task.Run(() => RunMoveTask()).ConfigureAwait(false);
+            RunMoveTask();
+            //Task.Run(() => RunMoveTask()).ConfigureAwait(false);
 
             return elevator;
         }
-        private static Object obj = new object();
+        
 
         private void RunMoveTask()
         {
@@ -161,7 +165,7 @@ namespace SmartBuilding.Services.Elevator
 
         private void LoadPassengers()
         {
-            new LoadOperation(elevator, floors).Execute();
+           new LoadOperation(elevator, floors).Execute();
         }
 
         private void InitiateElevatorStatus()

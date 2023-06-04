@@ -1,4 +1,6 @@
 ﻿using SmartBuilding.Contracts;
+using SmartBuilding.Contracts.Elevator;
+using SmartBuilding.Contracts.Floor;
 using SmartBuilding.Services.Display;
 using System;
 using System.Collections.Generic;
@@ -8,8 +10,10 @@ using System.Threading.Tasks;
 
 namespace SmartBuilding.Utils
 {
-    public static class CommonHelper
+    public class CommonHelper
     {
+        public delegate void LoadEventHandler(IElevator elevator, IList<IFloor> floors,IElevatorPassenger passenger);
+
         public static IDisplay? display;
 
         public static IDisplay GetDisplay
