@@ -32,7 +32,7 @@ internal class Program
         IFloor? elevatorFloor;
         Console.WriteLine();
         Console.WriteLine("===================================Loading Passenger=====================================");
-        Console.Write($"Enter destination floor between {firstFloor} and {lastFloor} for the passenger at floor No. #{passenger.FromFloor.FloorNo}: ");
+        Console.Write($"Enter destination floor between({firstFloor} and {lastFloor}) for the passenger at floor No. #{passenger.FromFloor.FloorNo}: ");
 
         bool floorNoResult = int.TryParse(Console.ReadLine(), out floorNo);
 
@@ -135,7 +135,7 @@ internal class Program
             Console.Write("Enter total number of basement: ");
             bool basementResult = int.TryParse(Console.ReadLine(), out totalBasement);
 
-            if (!basementResult || totalBasement <= 0)
+            if (!basementResult || totalBasement < 0)
                 continue;
 
             Console.Write("Enter total number of floor: ");
@@ -186,7 +186,7 @@ internal class Program
                 Console.WriteLine("------------------------------");
 
                 int floorNo = 0;
-                Console.Write($"Enter the initial elevator floor No. between ({firstFloor} and {lastFloor}:) ");
+                Console.Write($"Enter initial elevator floor No. between ({firstFloor} and {lastFloor}:) ");
                 bool floorNoResult = int.TryParse(Console.ReadLine(), out floorNo);
 
                 if (!floorNoResult || !(floorNo >= firstFloor && floorNo <= lastFloor))
@@ -197,7 +197,7 @@ internal class Program
                 if (elevatorFloor is null)
                     break;
 
-                Console.Write($"Enter the elevator maximum head count :");
+                Console.Write($"Enter elevator maximum head count :");
                 bool elevatorLimitResult = int.TryParse(Console.ReadLine(), out elevatorLimit);
 
                 if (!elevatorLimitResult || elevatorLimit <= 0)
@@ -286,7 +286,7 @@ internal class Program
 
             int floorNo = 0;
 
-            Console.Write($"Enter your current floor number between ({firstFloor} and {lastFloor}): ");
+            Console.Write($"Enter current floor number between ({firstFloor} and {lastFloor}): ");
             bool floorNoResult = int.TryParse(Console.ReadLine(), out floorNo);
 
             if (!floorNoResult || !(floorNo >= firstFloor && floorNo <= lastFloor))
@@ -298,7 +298,7 @@ internal class Program
                 break;
 
 
-            Console.Write("Enter the your direction Press U or D :");
+            Console.Write("Enter direction Press U or D :");
             string? inputDirection = Console.ReadLine();
 
             if (string.IsNullOrEmpty(inputDirection))
