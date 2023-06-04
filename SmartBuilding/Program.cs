@@ -31,9 +31,8 @@ internal class Program
         int floorNo = 0;
         IFloor? elevatorFloor;
         Console.WriteLine();
-        Console.WriteLine("================Loading Passenger================");
-        Console.WriteLine($"Floor No. between {firstFloor} and {lastFloor}");
-        Console.Write($"Enter destination floor for the passenger at floor No.#{passenger.FromFloor.FloorNo}: ");
+        Console.WriteLine("===================================Loading Passenger=====================================");
+        Console.Write($"Enter destination floor between {firstFloor} and {lastFloor} for the passenger at floor No. #{passenger.FromFloor.FloorNo}: ");
 
         bool floorNoResult = int.TryParse(Console.ReadLine(), out floorNo);
 
