@@ -27,8 +27,14 @@ namespace SmartBuilding.Services.Display
         {
             try
             {
-                if (!client.IsConnected)
-                    client.Connect();
+                int retryCount = 1;
+                
+                while (!client.IsConnected && retryCount < 4)
+                {
+                    client.Connect(400);
+                    Thread.Sleep(150);
+                    retryCount++;
+                }
 
                 StreamWriter writer = new StreamWriter(client);
                 writer.WriteLine(data);

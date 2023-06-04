@@ -21,7 +21,8 @@ internal class Program
     {
         SetupMenu();
     }
-    static void SetupMenu()
+
+    private static void SetupMenu()
     {
         bool showMenu = true;
 
@@ -30,8 +31,8 @@ internal class Program
             showMenu = MainMenu();
         }
     }
-
-    static bool MainMenu()
+    
+    private static bool MainMenu()
     {
         IBuilding? building;
 
@@ -55,12 +56,14 @@ internal class Program
                 buildingProcessor.ClearItems();
 
                 IList<IFloor>? floors = null;
-
                 while (floors == null)
                     floors = CollectBuildingFloorData();
                 buildingProcessor.AddRange(floors);
 
-                IList<IElevator> elevators = CollectElevatorData(floors[0]);
+                IList<IElevator> elevators = null;
+                while(elevators == null)
+                   elevators = CollectElevatorData(floors);
+
                 buildingProcessor.AddRange(elevators);
 
                 BuildDeviceOperation(buildingProcessor, floors);
@@ -73,8 +76,8 @@ internal class Program
                 return false;
         }
     }
-
-    static IBuilding? CollectBuildingData()
+    
+    private static IBuilding? CollectBuildingData()
     {
         Console.Clear();
         Console.WriteLine("===========================================================");
@@ -89,8 +92,8 @@ internal class Program
 
         return BuildingHelper.SetUpBuiling(name.Trim());
     }
-
-    static IList<IFloor> CollectBuildingFloorData()
+    
+    private static IList<IFloor> CollectBuildingFloorData()
     {
         bool collectData = true;
 
@@ -124,12 +127,12 @@ internal class Program
         return null;
     }
 
-    static IList<IElevator> CollectElevatorData(IFloor floor)
+    private static IList<IElevator> CollectElevatorData(IList<IFloor> floors)
     {
-        bool collectData = true;
+        bool hasNoData = true;
         IList<IElevator> elevators = new List<IElevator>();
 
-        while (collectData)
+        while (hasNoData)
         {
             int totalElevator = 0;
             Console.Clear();
@@ -146,26 +149,46 @@ internal class Program
 
             int elevatorLimit = 0;
             int index = 1;
+            IFloor? elevatorFloor;
+            int firstFloor = floors[0].FloorNo;
+            int lastFloor = floors[floors.Count - 1].FloorNo;
 
-            do
+            for (int i = 1; i <= totalElevator; i++)
             {
-                Console.Write($"Enter the maximum head count for elevator #{index} :");
+                Console.WriteLine("------------------------------");
+                Console.WriteLine($"Enter the elevator #{i} data");
+                Console.WriteLine("------------------------------");
+
+                int floorNo = 0;
+                Console.Write($"Enter elevator starting floor number ({firstFloor} and {lastFloor}:) ");
+                bool floorNoResult = int.TryParse(Console.ReadLine(), out floorNo);
+
+                if (!floorNoResult || !(floorNo >= firstFloor && floorNo <= lastFloor))
+                    break;
+
+                elevatorFloor = floors.FirstOrDefault(i => i.FloorNo == floorNo);
+
+                if (elevatorFloor is null)
+                    break;
+
+                Console.Write($"Enter the maximum head count limit:");
                 bool elevatorLimitResult = int.TryParse(Console.ReadLine(), out elevatorLimit);
 
                 if (!elevatorLimitResult || elevatorLimit <= 0)
                     continue;
 
-                elevators.Add(new Elevator("EL-" + index, floor, elevatorLimit));
+                elevators.Add(new Elevator("EL-" + index, elevatorFloor, elevatorLimit));
                 index++;
+            }
 
-            } while (index <= totalElevator);
-            collectData = false;
+            if (elevators.Any())
+                hasNoData = false;
         }
 
         return elevators;
     }
-
-    static void BuildDeviceOperation(IBuildingProcessor buildingProcessor, IList<IFloor> floors)
+    
+    private static void BuildDeviceOperation(IBuildingProcessor buildingProcessor, IList<IFloor> floors)
     {
         IEnumerable<IElevator> elevators = buildingProcessor.GetAvailableItems<IElevator>();
 
@@ -180,9 +203,9 @@ internal class Program
                 Console.WriteLine($" Min Floor No. ({floors[0].FloorNo})  Max Floor No. ({floors[floors.Count - 1].FloorNo})");
                 Console.WriteLine($" --------------------------------------------");
                 Console.WriteLine($"Press #1 to call elevator");
-                Console.WriteLine($"Press #2 move passangers, Pending({elevators.SelectMany(i => i.Passengers).Count(i => i.Waiting == true || (i.Waiting == false && i.ToFloor == null))})");
-                Console.WriteLine($"Press #3 to check elevator status");
-                Console.WriteLine($"Press #4 to view passenger status");
+                Console.WriteLine($"Press #2 to move passangers, Pending({elevators.SelectMany(i => i.Passengers).Count(i => i.Waiting == true || (i.Waiting == false && i.ToFloor == null))})");
+                Console.WriteLine($"Press #3 to view elevators status");
+                Console.WriteLine($"Press #4 to view passengers status");
                 Console.WriteLine($"Press #5 clear passenger");
                 Console.WriteLine($"Press #6 to exit");
                 Console.Write("\r\nSelect an option: ");
@@ -195,18 +218,24 @@ internal class Program
 
                     case "2":
                         MovePassengers(elevators, floors);
-
                         break;
 
                     case "3":
-                        ViewElevatorStatus(elevators);
+                        ShowElevatorStatus(elevators);
+                        Console.WriteLine("Press any key");
                         Console.ReadLine();
                         break;
 
                     case "4":
+                        ShowPassengerStatus(elevators);
+                        Console.WriteLine("Press any key");
+                        Console.ReadLine();
                         break;
 
                     case "5":
+                        ClearPassengers(elevators);
+                        Console.WriteLine("Press any key");
+                        Console.ReadLine();
                         break;
                     case "6":
                     default:
@@ -215,8 +244,8 @@ internal class Program
             }
         }
     }
-
-    static List<CallOperation> GetCallerData(IEnumerable<IElevator> elevators, int totalPassenger, IList<IFloor> floors, out bool passengerResult)
+    
+    private static List<CallOperation> GetCallerData(IEnumerable<IElevator> elevators, int totalPassenger, IList<IFloor> floors, out bool passengerResult)
     {
         passengerResult = false;
         List<CallOperation> callers = new List<CallOperation>();
@@ -266,8 +295,8 @@ internal class Program
 
         return callers;
     }
-
-    static void CallElevator(IEnumerable<IElevator> elevators, IList<IFloor> floors)
+    
+    private static void CallElevator(IEnumerable<IElevator> elevators, IList<IFloor> floors)
     {
         int totalPassenger = 0;
         bool passengerResult = false;
@@ -297,10 +326,9 @@ internal class Program
                 new MoveOperation(elevator).Execute();
             }
         }
-
     }
-
-    static void MovePassengers(IEnumerable<IElevator> elevators, IList<IFloor> floors)
+    
+    private static void MovePassengers(IEnumerable<IElevator> elevators, IList<IFloor> floors)
     {
         foreach (IElevator elevator in elevators)
         {
@@ -332,8 +360,8 @@ internal class Program
             new MoveOperation(elevator).Execute();
         }
     }
-
-    static void ViewElevatorStatus(IEnumerable<IElevator> elevators)
+    
+    private static void ShowElevatorStatus(IEnumerable<IElevator> elevators)
     {
         foreach (IElevator elevator in elevators)
         {
@@ -347,6 +375,37 @@ internal class Program
             Console.WriteLine($"Passengers     : {elevator.Passengers.Count(i => i.ToFloor != null)}");
             Console.WriteLine($"Callers        : {elevator.Passengers.Count(i => i.ToFloor == null)}");
             Console.WriteLine($" --------------------------------------------");
+        }
+    }
+    
+    private static void ClearPassengers(IEnumerable<IElevator> elevators)
+    {
+        foreach (IElevator elevator in elevators)
+        {
+            elevator.Passengers.Clear();
+            elevator.ResetStatus();
+        }
+    }
+    
+    private static void ShowPassengerStatus(IEnumerable<IElevator> elevators)
+    {
+        foreach (IElevator elevator in elevators)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"--------------------------------------------");
+            Console.WriteLine($"Elevator       : {elevator.ItemId}");
+            int index = 1;
+
+            foreach (IPassenger passenger in elevator.Passengers)
+            {
+                Console.WriteLine($"--------------------------------------------");
+                Console.WriteLine($"Passenger #       : {index++}");
+                Console.WriteLine($"Source Floor      : {passenger.FromFloor.FloorNo}");
+                Console.WriteLine($"Direction         : {passenger.Direction}");
+                Console.WriteLine($"Waiting           : {passenger.Waiting}");
+                Console.WriteLine($"Destination Floor : {(passenger.ToFloor == null ? "-" : passenger.ToFloor.FloorNo)}");
+                Console.WriteLine($"-----------------#---------------------------");
+            }
         }
     }
 }
