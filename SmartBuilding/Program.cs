@@ -41,7 +41,7 @@ internal class Program
 
         Console.WriteLine();
         Console.WriteLine("===================================Loading Passenger=====================================");
-        Console.Write($"Enter destination floor between({firstFloor} and {lastFloor}) for the passenger at floor No. #{passenger.FromFloor.FloorNo}: ");
+        Console.Write($"Enter the destination floor between({firstFloor} and {lastFloor}) for the passenger at floor No. #{passenger.FromFloor.FloorNo}: ");
 
         bool floorNoResult = int.TryParse(Console.ReadLine(), out floorNo);
 
@@ -128,7 +128,7 @@ internal class Program
             Console.WriteLine("===========================================================");
             Console.WriteLine();
 
-            Console.Write("Enter the Building Name: ");
+            Console.Write("Enter the building Name: ");
             string? name = Console.ReadLine();
 
             if (string.IsNullOrEmpty(name))
@@ -138,13 +138,13 @@ internal class Program
             IBuildingProcessor buildingProcessor = BuildingHelper.GetBuildingProcessor(building);
             buildingProcessor.ClearItems();
 
-            Console.Write("Enter total No. of basement: ");
+            Console.Write("Enter the total No. of basement: ");
             bool basementResult = int.TryParse(Console.ReadLine(), out totalBasement);
 
             if (!basementResult || totalBasement < 0)
                 continue;
 
-            Console.Write("Enter total No. of floor: ");
+            Console.Write("Enter the total No. of floor: ");
             bool floorResult = int.TryParse(Console.ReadLine(), out totalFloor);
 
             if (!floorResult || totalFloor <= 0)
@@ -169,7 +169,8 @@ internal class Program
             Console.Clear();
             Console.WriteLine("===========================================================");
             Console.WriteLine($"   Enter the elevator data and press anykey   ");
-            Console.WriteLine("===========================================================");
+            Console.WriteLine("==========================================================" +
+                "=");
             Console.WriteLine();
             Console.Write("Enter the total No. of elevator: ");
             bool elevatorResult = int.TryParse(Console.ReadLine(), out totalElevator);
@@ -191,14 +192,14 @@ internal class Program
                 Console.WriteLine("------------------------------");
 
                 int floorNo = 0;
-                Console.Write($"Enter initial elevator floor No. between ({firstFloor} and {lastFloor}:) ");
+                Console.Write($"Enter the initial elevator floor No. between ({firstFloor} and {lastFloor}:) ");
                 bool floorNoResult = int.TryParse(Console.ReadLine(), out floorNo);
 
                 floorNo = GetFloorNumber(floorNoResult, floorNo, firstFloor, lastFloor);
 
                 elevatorFloor = floors.First(i => i.FloorNo == floorNo);
 
-                Console.Write($"Enter elevator maximum head count :");
+                Console.Write($"Enter the elevator maximum head count :");
                 bool elevatorLimitResult = int.TryParse(Console.ReadLine(), out elevatorLimit);
 
                 if (!elevatorLimitResult || elevatorLimit <= 0)
@@ -294,7 +295,7 @@ internal class Program
 
             callerFloor = floors.First(i => i.FloorNo == floorNo);
 
-            Console.Write("Enter direction Press (Up or Down(U/D)) :");
+            Console.Write("Enter the direction Press (Up or Down(U/D)) :");
             string? inputDirection = Console.ReadLine();
 
             if (string.IsNullOrEmpty(inputDirection))
@@ -379,7 +380,7 @@ internal class Program
                 {
                     canMove = true;
                     Console.WriteLine();
-                    Console.Write($"Enter destination floor between({firstFloor} and {lastFloor}) for the passenger at floor No. #{passenger.FromFloor.FloorNo}: ");
+                    Console.Write($"Enter the destination floor between({firstFloor} and {lastFloor}) for the passenger at floor No. #{passenger.FromFloor.FloorNo}: ");
                     var result = int.TryParse(Console.ReadLine(), out destinationFloorNo);
 
                     if (result)
