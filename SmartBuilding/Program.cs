@@ -74,8 +74,6 @@ internal class Program
     
     private static bool MainMenu()
     {
-        IBuilding? building;
-
         Console.Clear();
         Console.WriteLine("======================================================================");
         Console.WriteLine($"                   Welcome to Smart Builing!                         ");
@@ -88,20 +86,11 @@ internal class Program
         switch (Console.ReadLine())
         {
             case "1":
-                building = CollectBuildingData();
-                if (building is null)
-                    return true;
-
-                IBuildingProcessor buildingProcessor = BuildingHelper.GetBuildingProcessor(building);
-                buildingProcessor.ClearItems();
-
-                IList<IFloor>? floors = null;
-                while (floors == null)
-                    floors = CollectBuildingFloorData();
+                IList<IFloor> floors;
+                IBuildingProcessor buildingProcessor = CollectBuildingFloorData(out floors);
                 buildingProcessor.AddRange(floors);
 
-                IList<IElevator> elevators = null;
-                while(elevators == null)
+                IList<IElevator> elevators;
                    elevators = CollectElevatorData(floors);
 
                 buildingProcessor.AddRange(elevators);
@@ -117,35 +106,32 @@ internal class Program
         }
     }
     
-    private static IBuilding? CollectBuildingData()
-    {
-        Console.Clear();
-        Console.WriteLine("===========================================================");
-        Console.WriteLine("  Enter the building information and press anykey   ");
-        Console.WriteLine("===========================================================");
-        Console.WriteLine();
-        Console.Write("Enter the Building Name: ");
-        string? name = Console.ReadLine();
-
-        if (string.IsNullOrEmpty(name))
-            return null;
-
-        return BuildingHelper.SetUpBuiling(name.Trim());
-    }
-    
-    private static IList<IFloor> CollectBuildingFloorData()
+    private static IBuildingProcessor CollectBuildingFloorData(out IList<IFloor> floors)
     {
         bool collectData = true;
+        floors = new List<IFloor>();
 
         while (collectData)
         {
             int totalBasement = 0;
             int totalFloor = 0;
+                        
             Console.Clear();
             Console.WriteLine("===========================================================");
-            Console.WriteLine("   Enter the floor data and press anykey   ");
+            Console.WriteLine("   Enter the building data and press anykey   ");
             Console.WriteLine("===========================================================");
             Console.WriteLine();
+            
+            Console.Write("Enter the Building Name: ");
+            string? name = Console.ReadLine();
+
+            if (string.IsNullOrEmpty(name))
+                continue;
+
+            IBuilding building = BuildingHelper.SetUpBuiling(name.Trim());
+            IBuildingProcessor buildingProcessor = BuildingHelper.GetBuildingProcessor(building);
+            buildingProcessor.ClearItems();
+
             Console.Write("Enter total No. of basement: ");
             bool basementResult = int.TryParse(Console.ReadLine(), out totalBasement);
 
@@ -155,13 +141,14 @@ internal class Program
             Console.Write("Enter total No. of floor: ");
             bool floorResult = int.TryParse(Console.ReadLine(), out totalFloor);
 
-
             if (!floorResult || totalFloor <= 0)
                 continue;
 
-            collectData = false;
+            
 
-            return BuildingHelper.SetupBuildingFloors(totalBasement, totalFloor);
+            floors = BuildingHelper.SetupBuildingFloors(totalBasement, totalFloor);
+            collectData = false;
+            return buildingProcessor;
         }
 
         return null;
