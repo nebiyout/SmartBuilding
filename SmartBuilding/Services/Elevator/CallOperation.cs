@@ -143,15 +143,6 @@ namespace SmartBuilding.Services.Elevator
                 int nearPassanger = GetNearPassenger(elevator);
                 near = Math.Min(nearCaller, nearPassanger);
 
-                //var farOrder = passangers.Where(i => i.ToFloor != null);
-                //if (farOrder.Any())
-                //    far = farOrder.Max(i => i.ToFloor.FloorNo);
-
-                //var nearOrder = passangers.Where(i => i.ToFloor != null);
-
-                //if (nearOrder.Any())
-                //    near = nearOrder.Min(i => i.ToFloor.FloorNo);
-
                 if (elevator.Direction == MovementDirection.Up)
                 {
                     if (callerDirection == MovementDirection.Up)

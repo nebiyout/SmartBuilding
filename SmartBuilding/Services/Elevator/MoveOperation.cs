@@ -25,9 +25,6 @@ namespace SmartBuilding.Services.Elevator
             floors = BuildingHelper.GetItems<IFloor>();
             _ = floors ?? throw new ArgumentNullException(nameof(floors));
             this.elevator = elevator;
-
-            minFloor = floors.Min(i => i.FloorNo);
-            maxFloor = floors.Min(i => i.FloorNo);
             
             NotificationManager<ElevatorUpdateDto>.Subscribe(new MovementNotification(CommonHelper.GetDisplay));
         }
