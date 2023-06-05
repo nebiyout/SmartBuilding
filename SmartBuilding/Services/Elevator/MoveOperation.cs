@@ -36,76 +36,71 @@ namespace SmartBuilding.Services.Elevator
         public IElevator Execute()
         {
             RunMoveTask();
-            //Task.Run(() => RunMoveTask()).ConfigureAwait(false);
-
             return elevator;
         }
-        
+
 
         private void RunMoveTask()
         {
-            lock (obj)
+            bool maxedOut = false;
+            while (true)
             {
-                bool maxedOut = false;
-                while (true)
+                if (elevator.Passengers.All(i => i.Waiting == false) && elevator.Passengers.All(i => i.Waiting == false && i.ToFloor == null))
                 {
-                    if (elevator.Passengers.All(i => i.Waiting == false) && elevator.Passengers.All(i => i.Waiting == false && i.ToFloor == null))
+                    elevator.ResetStatus();
+                    break;
+                }
+
+                if (maxedOut && elevator.Passengers.All(i => i.Waiting))
+                {
+                    elevator.ResetStatus();
+                    break;
+                }
+
+                InitiateElevatorStatus();
+
+                if (elevator.Direction == MovementDirection.Up)
+                {
+                    int farCaller = GetFarCaller();
+                    int farPassanger = GetFarPassenger();
+
+                    int farJobIndex = Math.Max(farCaller, farPassanger);
+                    int startJobIndex = elevator.CurrentFloor.FloorNo;
+                    while (startJobIndex <= farJobIndex)
                     {
-                        elevator.ResetStatus();
-                        break;
+                        BroadCast();
+                        OffLoadPassengers();
+
+                        if (!maxedOut)
+                            maxedOut = LoadPassengers();
+
+                        var nextFloor = floors.FirstOrDefault(i => i.FloorNo == startJobIndex + 1);
+                        if (nextFloor != null && startJobIndex + 1 <= farJobIndex)
+                            elevator.CurrentFloor = nextFloor;
+
+                        startJobIndex++;
                     }
+                }
+                else if (elevator.Direction == MovementDirection.Down)
+                {
+                    int nearCaller = GetNearCaller();
+                    int nearPassanger = GetNearPassenger();
 
-                    if (maxedOut && elevator.Passengers.All(i => i.Waiting))
+                    int nearJobIndex = Math.Min(nearCaller, nearPassanger);
+                    int startJobIndex = elevator.CurrentFloor.FloorNo;
+                    while (startJobIndex >= nearJobIndex)
                     {
-                        elevator.ResetStatus();
-                        break;
-                    }
+                        BroadCast();
+                        OffLoadPassengers();
 
-                    InitiateElevatorStatus();
+                        if (!maxedOut)
+                            maxedOut = LoadPassengers();
 
-                    if (elevator.Direction == MovementDirection.Up)
-                    {
-                        int farCaller = GetFarCaller();
-                        int farPassanger = GetFarPassenger();
+                        var prevFloor = floors.FirstOrDefault(i => i.FloorNo == startJobIndex - 1);
+                        if (prevFloor != null && startJobIndex - 1 >= nearJobIndex)
+                            elevator.CurrentFloor = prevFloor;
 
-                        int farJobIndex = Math.Max(farCaller, farPassanger);
-                        int startJobIndex = elevator.CurrentFloor.FloorNo;
-                        while (startJobIndex <= farJobIndex)
-                        {
-                            BroadCast();
-                            OffLoadPassengers();
-                            
-                            if (!maxedOut)
-                                maxedOut = LoadPassengers();
-
-                            var nextFloor = floors.FirstOrDefault(i => i.FloorNo == startJobIndex + 1);
-                            if (nextFloor != null && startJobIndex + 1 <= farJobIndex)
-                                elevator.CurrentFloor = nextFloor;
-
-                            startJobIndex++;
-                        }
-                    }
-                    else if (elevator.Direction == MovementDirection.Down)
-                    {
-                        int nearCaller = GetNearCaller();
-                        int nearPassanger = GetNearPassenger();
-
-                        int nearJobIndex = Math.Min(nearCaller, nearPassanger);
-                        int startJobIndex = elevator.CurrentFloor.FloorNo;
-                        while (startJobIndex >= nearJobIndex)
-                        {
-                            BroadCast();
-                            OffLoadPassengers();
-                            
-                            if (!maxedOut)
-                                maxedOut = LoadPassengers();
-
-                            var prevFloor = floors.FirstOrDefault(i => i.FloorNo == startJobIndex - 1);
-                            if (prevFloor != null && startJobIndex - 1 >= nearJobIndex)
-                                elevator.CurrentFloor = prevFloor;
-
-                            startJobIndex--;
-                        }
+                        startJobIndex--;
                     }
                 }
             }
