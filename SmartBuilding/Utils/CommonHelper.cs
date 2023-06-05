@@ -16,6 +16,8 @@ namespace SmartBuilding.Utils
 
         public delegate void MessageEventHandler(string message);
 
+        public static int  MinElevatorLimit => 4;
+
         public static IDisplay? display;
 
         public static IDisplay GetDisplay
