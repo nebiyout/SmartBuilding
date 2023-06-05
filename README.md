@@ -22,35 +22,35 @@ the "SmartBuilding" console application will present the following prompt
 to the user:
 
 
-===========================================================
+=============================
 Press #1 to create a building
 Press #2 to exit
 
 Please select an option: 1
 
-===========================================================
+=============================
   Enter the building data and press anykey
-===========================================================
+=============================
 
 Enter the Building Name:     <ENTER THE BUILDING NAME> and <Press Any Key>
 Enter total No. of basement: <ENTER BASEMENT COUNT, GREATER OR EQUAL TO ZERO> and <Press Any Key>
 Enter total No. of floor:    <ENTER FLOOR COUNT, GREATER THAN ZERO> and <Press Any Key>
 
-===========================================================
+=============================
    Enter the elevator data and press anykey
-===========================================================
+=============================
 
 Enter the total No. of elevator: <ENTER NUMBER OF ELEVATORS> and <Press Any Key>
-------------------------------
+-----------------------------
 Enter the elevator #1 data
-------------------------------
+-----------------------------
 Enter initial elevator floor No. between (min floor and max floor:) <ENTER FLOOR NUMBER> and <Press Any Key>
 Enter elevator maximum head count : <ENTER MAXIMUM PERSON LIMIT> and <Press Any Key>
 
 
-=============================================
+=============================
          Select Elevator Operation
-=============================================
+=============================
 Press #1 to call elevator
 Press #2 to move passangers, Pending(0)
 Press #3 to view elevators status
@@ -73,7 +73,7 @@ Enter direction Press (Up or Down(U/D)) :<ENTER DIRECTION U/D>
 
 
 #This will move the elevator to the destination floor
-===================================Loading Passenger=====================================
+=====Loading Passenger===
 Enter destination floor between(0 and 9) for the passenger at floor No. #0:  <ENTER FLOOR NO> 
 
 
@@ -82,14 +82,14 @@ Enter destination floor between(0 and 9) for the passenger at floor No. #0:  <EN
 
 #Select an option: 2
 #Press #2 to move passangers, Pending(0)
---------------------------------------------
+-----------------------------
 Enter destination floor between(0 and 9) for the passenger at floor No. #0:  <ENTER FLOOR NO> 
 
 
 
 #Select an option: 3
 #Press #3 to view elevators status
---------------------------------------------
+-----------------------------
 Elevator       : EL-1
 Floor No.      : 0
 Direction      : Idle
@@ -97,31 +97,31 @@ Max Head Count : 7
 Status         : Available
 Passengers     : 0
 Callers        : 0
---------------------------------------------
+-----------------------------
 
 
 #Select an option: 4
 #Press #4 to view passengers status
---------------------------------------------
+-----------------------------
 Elevator       : EL-1
---------------------------------------------
+-----------------------------
 Passenger #       : 1
 Source Floor      : 0
 Destination Floor : -
 Direction         : Up
 Waiting           : False
------------------#---------------------------
+-----------------#-----------
 
 
 #Select an option: 5
 #Press #5 to clear passenger
---------------------------------------------
+-----------------------------
 Clear passengers
 
 
 #Select an option: 
 #Press #6 to exit
--------------------------------------------
+-----------------------------
 back to main menu
 
 
