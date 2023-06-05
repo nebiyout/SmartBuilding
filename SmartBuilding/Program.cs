@@ -353,7 +353,7 @@ internal class Program
         foreach (IElevator elevator in elevators)
         {
             Console.WriteLine();
-            Console.WriteLine($" --------------------------------------------");
+            Console.WriteLine($"--------------------------------------------");
             Console.WriteLine($"Elevator       : {elevator.ItemId}");
             Console.WriteLine($"Floor No.      : {elevator.CurrentFloor.FloorNo}");
             Console.WriteLine($"Direction      : {elevator.Direction}");
@@ -361,7 +361,7 @@ internal class Program
             Console.WriteLine($"Status         : {elevator.ItemStatus.ToString()}");
             Console.WriteLine($"Passengers     : {elevator.Passengers.Count(i => i.ToFloor != null)}");
             Console.WriteLine($"Callers        : {elevator.Passengers.Count(i => i.ToFloor == null)}");
-            Console.WriteLine($" --------------------------------------------");
+            Console.WriteLine($"--------------------------------------------");
         }
     }
     
