@@ -22,8 +22,8 @@ the "SmartBuilding" console application will present the following prompt
 to the user:
 
 
-Press #1 to create a building
-Press #2 to exit
+#Press #1 to create a building
+#Press #2 to exit
 
 Please select an option: 1
 
