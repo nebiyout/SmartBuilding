@@ -15,7 +15,7 @@ is required, with the "ConsoleDisplayScreen" set to start
 before the "SmartBuilding" project.
 
 
-Upon executing the application with the with the configuration, the 
+Upon executing the application with the configuration, the 
 "ConsoleDisplayScreen" will display the message "Waiting for connection...," 
 indicating that it is ready to establish a connection. Simultaneously, 
 the "SmartBuilding" console application will present the following prompt 
