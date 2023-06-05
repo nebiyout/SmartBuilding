@@ -207,36 +207,5 @@ namespace SmartBuilding.Tests
             // assert
             Assert.Equal(elevatorMock.Object, result); // even though the elevator is going down and the caller is going up, it's still the closest elevator
         }
-
-        //// Test Case for when elevator is already full
-        //[Fact]
-        //public void Execute_ReturnsNextClosestElevator_WhenClosestElevatorIsFull()
-        //{
-        //    // arrange
-        //    var passengerMock = new Mock<IPassenger>();
-        //    passengerMock.Setup(p => p.ToFloor.FloorNo).Returns(4);
-
-        //    var elevatorMock1 = new Mock<IElevator>();
-        //    elevatorMock1.Setup(e => e.CurrentFloor.FloorNo).Returns(1);
-        //    elevatorMock1.Setup(e => e.Direction).Returns(MovementDirection.Up);
-        //    elevatorMock1.Setup(e => e.Passengers.Count).Returns(10); // assuming 10 is the maximum capacity
-        //    elevatorMock1.Setup(e => e.Passengers).Returns(new List<IElevatorPassenger>());
-
-        //    var elevatorMock2 = new Mock<IElevator>();
-        //    elevatorMock2.Setup(e => e.CurrentFloor.FloorNo).Returns(2);
-        //    elevatorMock2.Setup(e => e.Direction).Returns(MovementDirection.Up);
-        //    elevatorMock2.Setup(e => e.Passengers).Returns(new List<IElevatorPassenger>());
-
-        //    var callerFloorMock = new Mock<IFloor>();
-        //    callerFloorMock.Setup(f => f.FloorNo).Returns(2);
-
-        //    var operation = new CallOperation(new List<IElevator> { elevatorMock1.Object, elevatorMock2.Object }, callerFloorMock.Object, MovementDirection.Up);
-
-        //    // act
-        //    var result = operation.Execute();
-
-        //    // assert
-        //    Assert.Equal(elevatorMock2.Object, result); // even though the elevator1 is closer, it's full, so elevator2 is chosen
-        //}
-    }
+    }   
 }
