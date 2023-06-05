@@ -22,23 +22,15 @@ the "SmartBuilding" console application will present the following prompt
 to the user:
 
 
-=============================
 Press #1 to create a building
 Press #2 to exit
 
 Please select an option: 1
 
-=============================
-  Enter the building data and press anykey
-=============================
-
 Enter the Building Name:     <ENTER THE BUILDING NAME> and <Press Any Key>
 Enter total No. of basement: <ENTER BASEMENT COUNT, GREATER OR EQUAL TO ZERO> and <Press Any Key>
 Enter total No. of floor:    <ENTER FLOOR COUNT, GREATER THAN ZERO> and <Press Any Key>
 
-=============================
-   Enter the elevator data and press anykey
-=============================
 
 Enter the total No. of elevator: <ENTER NUMBER OF ELEVATORS> and <Press Any Key>
 -----------------------------
@@ -48,9 +40,6 @@ Enter initial elevator floor No. between (min floor and max floor:) <ENTER FLOOR
 Enter elevator maximum head count : <ENTER MAXIMUM PERSON LIMIT> and <Press Any Key>
 
 
-=============================
-         Select Elevator Operation
-=============================
 Press #1 to call elevator
 Press #2 to move passangers, Pending(0)
 Press #3 to view elevators status
