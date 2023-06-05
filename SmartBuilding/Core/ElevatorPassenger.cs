@@ -20,7 +20,7 @@ namespace SmartBuilding.Core
 
         public IFloor? ToFloor { get; set; } //will be set during load operation
 
-        public bool Waiting { get; set; } = true;
+        public PassengerStatus Status { get; set; } = PassengerStatus.Waiting;
 
         public MovementDirection Direction { get; set; }
     }

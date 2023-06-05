@@ -229,7 +229,7 @@ internal class Program
                 Console.WriteLine($"         Select Elevator Operation          ");
                 Console.WriteLine("=============================================");
                 Console.WriteLine($"Press #1 to call elevator");
-                Console.WriteLine($"Press #2 to move passangers, Pending({elevators.SelectMany(i => i.Passengers).Count(i => i.Waiting == true || (i.Waiting == false && i.ToFloor == null))})");
+                Console.WriteLine($"Press #2 to move passangers, Pending({elevators.SelectMany(i => i.Passengers).Count(i => i.Status ==  PassengerStatus.Waiting || (i.Status ==  PassengerStatus.OnBoard && i.ToFloor == null))})");
                 Console.WriteLine($"Press #3 to view elevators status");
                 Console.WriteLine($"Press #4 to view passengers status");
                 Console.WriteLine($"Press #5 clear passenger");
@@ -362,7 +362,7 @@ internal class Program
             if (!elevator.Passengers.Any())
                 continue;
 
-            if (elevator.Passengers.Count(i => i.Waiting == false) > elevator.MaxPassengerLimit)
+            if (elevator.Passengers.Count(i => i.Status == PassengerStatus.OnBoard) > elevator.MaxPassengerLimit)
             {
                 Console.WriteLine($"Elevator ({elevator.MaxPassengerLimit}) maximum limit reached");
                 Console.ReadLine();
@@ -376,7 +376,7 @@ internal class Program
 
             elevator.Passengers.ForEach(passenger =>
             {
-                if (passenger.Waiting == false)
+                if (passenger.Status ==  PassengerStatus.OnBoard)
                 {
                     canMove = true;
                     Console.WriteLine();
@@ -445,7 +445,7 @@ internal class Program
                 Console.WriteLine($"Source Floor      : {passenger.FromFloor.FloorNo}");
                 Console.WriteLine($"Destination Floor : {(passenger.ToFloor == null ? "-" : passenger.ToFloor.FloorNo)}");
                 Console.WriteLine($"Direction         : {passenger.Direction}");
-                Console.WriteLine($"Waiting           : {passenger.Waiting}");                
+                Console.WriteLine($"Waiting           : {passenger.Status.ToString()}");                
                 Console.WriteLine($"-----------------#---------------------------");
             }
         }

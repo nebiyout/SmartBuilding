@@ -32,14 +32,14 @@ namespace SmartBuilding.Services.Elevator
         public IElevator Execute()
         {
             var passengersGotToElevator = elevator.Passengers
-               .Where(i => i.ToFloor == null && i.Waiting == true
+               .Where(i => i.ToFloor == null && i.Status == PassengerStatus.Waiting
                && i.FromFloor.FloorNo == elevator.CurrentFloor.FloorNo
                && elevator.Direction == i.Direction
                && elevator.ItemId == i.CalledElevator.ItemId);
 
             if (passengersGotToElevator.Any())
             {
-                int totalPassengers = passengersGotToElevator.Count() + elevator.Passengers.Count(i => i.Waiting == false);
+                int totalPassengers = passengersGotToElevator.Count() + elevator.Passengers.Count(i => i.Status ==  PassengerStatus.OnBoard);
                 if (totalPassengers > elevator.MaxPassengerLimit)
                 {
                     MaxedOut = true;
@@ -51,7 +51,7 @@ namespace SmartBuilding.Services.Elevator
                     MaxedOut = false;
                     foreach (IElevatorPassenger passenger in passengersGotToElevator)
                     {
-                        passenger.Waiting = false;
+                        passenger.Status = PassengerStatus.OnBoard;
                         loadEvent?.Invoke(elevator, floors.ToList(), passenger);
                     }
                 }

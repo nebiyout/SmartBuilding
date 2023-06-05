@@ -19,4 +19,10 @@
         Floor,
         AC
     }
+
+    public enum PassengerStatus
+    {
+        Waiting,
+        OnBoard
+    }
 }

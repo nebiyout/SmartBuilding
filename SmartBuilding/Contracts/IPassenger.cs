@@ -8,7 +8,7 @@ namespace SmartBuilding.Contracts
 
         IFloor? ToFloor { get; set; }
 
-        bool Waiting { get; set; }
+        PassengerStatus Status { get; set; }
 
         MovementDirection Direction { get; set; }
     }

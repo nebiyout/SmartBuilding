@@ -42,13 +42,13 @@ namespace SmartBuilding.Services.Elevator
             bool maxedOut = false;
             while (true)
             {
-                if (elevator.Passengers.All(i => i.Waiting == false) && elevator.Passengers.All(i => i.Waiting == false && i.ToFloor == null))
+                if (elevator.Passengers.All(i => i.Status ==  PassengerStatus.OnBoard) && elevator.Passengers.All(i => i.Status == PassengerStatus.OnBoard && i.ToFloor == null))
                 {
                     elevator.ResetStatus();
                     break;
                 }
 
-                if (maxedOut && elevator.Passengers.All(i => i.Waiting))
+                if (maxedOut && elevator.Passengers.All(i => i.Status == PassengerStatus.Waiting))
                 {
                     elevator.ResetStatus();
                     break;
@@ -110,14 +110,14 @@ namespace SmartBuilding.Services.Elevator
                 FloorNo = elevator.CurrentFloor.FloorNo,
                 Direction = elevator.Direction.ToString(),
                 ElevatorName = elevator.ItemId,
-                OnBoardPassengers = elevator.Passengers.Count(i => i.ToFloor != null || (i.ToFloor == null && i.Waiting == false))
+                OnBoardPassengers = elevator.Passengers.Count(i => i.ToFloor != null || (i.ToFloor == null && i.Status == PassengerStatus.OnBoard))
             });
         }
 
         private int GetFarCaller()
         {
             int farCaller = int.MinValue;
-            var callers = elevator.Passengers.Where(i => i.ToFloor == null && i.FromFloor.FloorNo >= elevator.CurrentFloor.FloorNo && i.Waiting == true);
+            var callers = elevator.Passengers.Where(i => i.ToFloor == null && i.FromFloor.FloorNo >= elevator.CurrentFloor.FloorNo && i.Status == PassengerStatus.Waiting);
             if (callers.Any())
                 farCaller = callers.Max(i => i.FromFloor.FloorNo);
 
@@ -127,7 +127,7 @@ namespace SmartBuilding.Services.Elevator
         private int GetFarPassenger()
         {
             int farPassenger = int.MinValue;
-            var passengers = elevator.Passengers.Where(i => i.ToFloor != null && i.ToFloor.FloorNo >= elevator.CurrentFloor.FloorNo && i.Waiting == false);
+            var passengers = elevator.Passengers.Where(i => i.ToFloor != null && i.ToFloor.FloorNo >= elevator.CurrentFloor.FloorNo && i.Status == PassengerStatus.OnBoard);
             if (passengers.Any())
                 farPassenger = passengers.Max(i => i.ToFloor.FloorNo);
 
@@ -137,7 +137,7 @@ namespace SmartBuilding.Services.Elevator
         private int GetNearCaller()
         {
             int nearCaller = int.MaxValue;
-            var callers = elevator.Passengers.Where(i => i.ToFloor == null && i.FromFloor.FloorNo <= elevator.CurrentFloor.FloorNo && i.Waiting == true);
+            var callers = elevator.Passengers.Where(i => i.ToFloor == null && i.FromFloor.FloorNo <= elevator.CurrentFloor.FloorNo && i.Status == PassengerStatus.Waiting);
             if (callers.Any())
                 nearCaller = callers.Min(i => i.FromFloor.FloorNo);
 
@@ -147,7 +147,7 @@ namespace SmartBuilding.Services.Elevator
         private int GetNearPassenger()
         {
             int nearPassenger = int.MaxValue;
-            var passengers = elevator.Passengers.Where(i => i.ToFloor != null && i.ToFloor.FloorNo <= elevator.CurrentFloor.FloorNo && i.Waiting == false);
+            var passengers = elevator.Passengers.Where(i => i.ToFloor != null && i.ToFloor.FloorNo <= elevator.CurrentFloor.FloorNo && i.Status == PassengerStatus.OnBoard);
             if (passengers.Any())
                 nearPassenger = passengers.Min(i => i.ToFloor.FloorNo);
 
@@ -156,7 +156,7 @@ namespace SmartBuilding.Services.Elevator
 
         private void OffLoadPassengers()
         {
-            Func<IElevatorPassenger, bool> funcDepartingPassengers = i => i.ToFloor != null && i.Waiting == false
+            Func<IElevatorPassenger, bool> funcDepartingPassengers = i => i.ToFloor != null && i.Status == PassengerStatus.OnBoard
             && i.ToFloor.FloorNo == elevator.CurrentFloor.FloorNo;
 
             var unloaded = new UnloadOperation(elevator, funcDepartingPassengers);
