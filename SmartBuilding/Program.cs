@@ -45,9 +45,10 @@ internal class Program
 
         bool floorNoResult = int.TryParse(Console.ReadLine(), out floorNo);
 
-        floorNo = GetFloorNumber(floorNoResult, floorNo, firstFloor, lastFloor);
-
-        passenger.ToFloor = floors.FirstOrDefault(i => i.FloorNo == floorNo);
+        if (floorNoResult && floorNo >= firstFloor && firstFloor <= lastFloor)
+        {
+            passenger.ToFloor = floors.FirstOrDefault(i => i.FloorNo == floorNo);
+        }
     }
 
     private static int GetFloorNumber(bool floorNoResult, int floorNo, int firstFloor, int lastFloor)
@@ -76,7 +77,7 @@ internal class Program
             showMenu = MainMenu();
         }
     }
-    
+
     private static bool MainMenu()
     {
         Console.Clear();
@@ -96,7 +97,7 @@ internal class Program
                 buildingProcessor.AddRange(floors);
 
                 IList<IElevator> elevators;
-                   elevators = CollectElevatorData(floors);
+                elevators = CollectElevatorData(floors);
 
                 buildingProcessor.AddRange(elevators);
 
@@ -110,7 +111,7 @@ internal class Program
                 return false;
         }
     }
-    
+
     private static IBuildingProcessor CollectBuildingFloorData(out IList<IFloor> floors)
     {
         bool collectData = true;
@@ -213,7 +214,7 @@ internal class Program
 
         return elevators;
     }
-    
+
     private static void BuildDeviceOperation(IBuildingProcessor buildingProcessor, IList<IFloor> floors)
     {
         IEnumerable<IElevator> elevators = buildingProcessor.GetAvailableItems<IElevator>();
@@ -227,10 +228,11 @@ internal class Program
                 Console.WriteLine($"         Select Elevator Operation          ");
                 Console.WriteLine("=============================================");
                 Console.WriteLine($"Press #1 to call elevator");
-                Console.WriteLine($"Press #2 to view elevators status");
-                Console.WriteLine($"Press #3 to view passengers status");
-                Console.WriteLine($"Press #4 clear passenger");
-                Console.WriteLine($"Press #5 to exit");
+                Console.WriteLine($"Press #2 to move passangers, Pending({elevators.SelectMany(i => i.Passengers).Count(i => i.Waiting == true || (i.Waiting == false && i.ToFloor == null))})");
+                Console.WriteLine($"Press #3 to view elevators status");
+                Console.WriteLine($"Press #4 to view passengers status");
+                Console.WriteLine($"Press #5 clear passenger");
+                Console.WriteLine($"Press #6 to exit");
                 Console.Write("\r\nSelect an option: ");
 
                 switch (Console.ReadLine())
@@ -240,30 +242,34 @@ internal class Program
                         break;
 
                     case "2":
+                        MovePassengers(elevators, floors);
+                        break;
+
+                    case "3":
                         ShowElevatorStatus(elevators);
                         Console.WriteLine("Press any key");
                         Console.ReadLine();
                         break;
 
-                    case "3":
+                    case "4":
                         ShowPassengerStatus(elevators);
                         Console.WriteLine("Press any key");
                         Console.ReadLine();
                         break;
 
-                    case "4":
+                    case "5":
                         ClearPassengers(elevators);
                         Console.WriteLine("Press any key");
                         Console.ReadLine();
                         break;
-                    case "5":
+                    case "6":
                     default:
                         return;
                 }
             }
         }
     }
-    
+
     private static List<CallOperation> GetCallerData(IEnumerable<IElevator> elevators, int totalPassenger, IList<IFloor> floors, out bool passengerResult)
     {
         passengerResult = false;
@@ -315,7 +321,7 @@ internal class Program
 
         return callers;
     }
-    
+
     private static void CallElevator(IEnumerable<IElevator> elevators, IList<IFloor> floors)
     {
         int totalPassenger = 0;
@@ -347,7 +353,55 @@ internal class Program
             }
         }
     }
-  
+
+    private static void MovePassengers(IEnumerable<IElevator> elevators, IList<IFloor> floors)
+    {
+        foreach (IElevator elevator in elevators)
+        {
+            if (!elevator.Passengers.Any())
+                continue;
+
+            if (elevator.Passengers.Count(i => i.Waiting == false) > elevator.MaxPassengerLimit)
+            {
+                Console.WriteLine($"Elevator ({elevator.MaxPassengerLimit}) maximum limit reached");
+                Console.ReadLine();
+                continue;
+            }
+
+            int destinationFloorNo = 0;
+            int firstFloor = floors[0].FloorNo;
+            int lastFloor = floors[floors.Count - 1].FloorNo;
+            bool canMove = false;
+
+            elevator.Passengers.ForEach(passenger =>
+            {
+                if (passenger.Waiting == false)
+                {
+                    canMove = true;
+                    Console.WriteLine();
+                    Console.Write($"Enter destination floor between({firstFloor} and {lastFloor}) for the passenger at floor No. #{passenger.FromFloor.FloorNo}: ");
+                    var result = int.TryParse(Console.ReadLine(), out destinationFloorNo);
+
+                    if (result)
+                    {
+                        if (destinationFloorNo < firstFloor)
+                            destinationFloorNo = firstFloor;
+                        else if (destinationFloorNo > lastFloor)
+                            destinationFloorNo = lastFloor;
+
+                        var destinationFloor = floors.FirstOrDefault(i => i.FloorNo == destinationFloorNo);
+
+                        if (destinationFloor != null)
+                            passenger.ToFloor = destinationFloor;
+                    }
+                }
+            });
+
+            if (canMove)
+                new MoveOperation(elevator).Execute();
+        }
+    }
+
     private static void ShowElevatorStatus(IEnumerable<IElevator> elevators)
     {
         foreach (IElevator elevator in elevators)
@@ -364,7 +418,7 @@ internal class Program
             Console.WriteLine($"--------------------------------------------");
         }
     }
-    
+
     private static void ClearPassengers(IEnumerable<IElevator> elevators)
     {
         foreach (IElevator elevator in elevators)
@@ -373,7 +427,7 @@ internal class Program
             elevator.ResetStatus();
         }
     }
-    
+
     private static void ShowPassengerStatus(IEnumerable<IElevator> elevators)
     {
         foreach (IElevator elevator in elevators)
@@ -388,9 +442,9 @@ internal class Program
                 Console.WriteLine($"--------------------------------------------");
                 Console.WriteLine($"Passenger #       : {index++}");
                 Console.WriteLine($"Source Floor      : {passenger.FromFloor.FloorNo}");
-                Console.WriteLine($"Direction         : {passenger.Direction}");
-                Console.WriteLine($"Waiting           : {passenger.Waiting}");
                 Console.WriteLine($"Destination Floor : {(passenger.ToFloor == null ? "-" : passenger.ToFloor.FloorNo)}");
+                Console.WriteLine($"Direction         : {passenger.Direction}");
+                Console.WriteLine($"Waiting           : {passenger.Waiting}");                
                 Console.WriteLine($"-----------------#---------------------------");
             }
         }
