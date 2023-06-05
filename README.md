@@ -15,6 +15,20 @@ is required, with the "ConsoleDisplayScreen" set to start
 before the "SmartBuilding" project.
 
 
+#Solution Structure
+
+#Project 01(ConsoleDisplayScreen)
+ - Program.cs => Listens data to display
+ 
+#Project 02(SmartBuilding)
+- Contracts  => interfaces for building,elevator, floor, passenger and display
+- Core       => entities and DTo
+- Services   => operations and notification of an elevator
+- Utils      => Pubsub to show elevators position, direction and No. of passengers to the display ("ConsoleDisplayScreen")
+                Helper clases for building and building Processor 
+- Program.cs (menu navigation and user interactions)
+
+
 Upon executing the application with the configuration, the 
 "ConsoleDisplayScreen" will display the message "Waiting for connection...," 
 indicating that it is ready to establish a connection. Simultaneously, 
@@ -22,14 +36,17 @@ the "SmartBuilding" console application will present the following prompt
 to the user:
 
 
-Solution Structure
-Project 01(ConsoleDisplayScreen)
- - Program.cs => Listens data to display
- 
-Project 02(SmartBuilding)
-- Contracts  => interfaces for building,elevator, floor, passenger and display
-- Core       => entities and DTo
-- Services   => operations and notification of an elevator
-- Utils      => Pubsub to show elevators position, direction and No. of passengers to the display ("ConsoleDisplayScreen")
-                Helper clases for building and building Processor 
-- Program.cs (menu navigation and user interactions)
+#Press #1 to create a building
+#Press #2 to exit
+
+Please select an option: 1
+
+Enter the building name:          <ENTER NAME> & <Press any key>
+Enter the total No. of basement:  <ENTER BASEMENT COUNT, GREATER OR EQUAL TO ZERO> & <Press any key>
+Enter the total No. of floor:     <ENTER FLOOR COUNT, GREATER THAN ZERO> and <Press Any Key>
+
+
+Enter the total No. of elevator: <ENTER NUMBER OF ELEVATORS> and <Press any key>
+-----------------------------
+Enter the elevator #1 data
+-----------------------------
