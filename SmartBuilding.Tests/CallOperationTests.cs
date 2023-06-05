@@ -24,7 +24,7 @@ namespace SmartBuilding.Tests
         [Fact]
         public void Execute_ThrowsArgumentException_WhenNoElevatorFound()
         {
-            Assert.Throws<ArgumentException>(() => new CallOperation(new List<IElevator> (), new Mock<IFloor>().Object, MovementDirection.Up));
+            Assert.Throws<ArgumentException>(() => new CallOperation(new List<IElevator>(), new Mock<IFloor>().Object, MovementDirection.Up));
         }
 
         [Fact]
@@ -94,13 +94,13 @@ namespace SmartBuilding.Tests
             elevatorMock1.Setup(e => e.CurrentFloor.FloorNo).Returns(1);
             elevatorMock1.Setup(e => e.Direction).Returns(MovementDirection.Idle);
             elevatorMock1.Setup(e => e.Passengers).Returns(new List<IElevatorPassenger>());
-            
+
             //moving elevator
             var elevatorMock2 = new Mock<IElevator>();
             elevatorMock2.Setup(e => e.CurrentFloor.FloorNo).Returns(5);
             elevatorMock2.Setup(e => e.Direction).Returns(MovementDirection.Up);
             elevatorMock2.Setup(e => e.Passengers).Returns(new List<IElevatorPassenger>());
-            
+
             var callerFloorMock = new Mock<IFloor>();
             callerFloorMock.Setup(f => f.FloorNo).Returns(2);
 
@@ -113,7 +113,7 @@ namespace SmartBuilding.Tests
             Assert.Equal(elevatorMock1.Object, result); // expect the idle elevator to be selected as it's closer
         }
 
-       
+
         [Fact]
         public void Execute_ReturnsClosestElevator_WhenClosestElevatorMovingSameDirectionToCaller()
         {
@@ -141,5 +141,102 @@ namespace SmartBuilding.Tests
             // assert
             Assert.Equal(elevatorMock2.Object, result); // expect the moving elevator to be selected as it's closer
         }
+
+
+        [Fact]
+        public void Execute_ReturnsClosestElevator_WhenClosestElevatorUpAndCallerUpButElevatorHigher()
+        {
+            // arrange
+            var elevatorMock = new Mock<IElevator>();
+            elevatorMock.Setup(e => e.CurrentFloor.FloorNo).Returns(3);
+            elevatorMock.Setup(e => e.Direction).Returns(MovementDirection.Up);
+            elevatorMock.Setup(e => e.Passengers).Returns(new List<IElevatorPassenger>());
+
+            var callerFloorMock = new Mock<IFloor>();
+            callerFloorMock.Setup(f => f.FloorNo).Returns(2);
+
+            var operation = new CallOperation(new List<IElevator> { elevatorMock.Object }, callerFloorMock.Object, MovementDirection.Up);
+
+            // act
+            var result = operation.Execute();
+
+            // assert
+            Assert.Equal(elevatorMock.Object, result); // even though the elevator is going up and it's higher, it's still the closest elevator
+        }
+
+        // Test Case for when the closest elevator is going down, the caller is also going down, but the elevator is at a lower floor
+        [Fact]
+        public void Execute_ReturnsClosestElevator_WhenClosestElevatorDownAndCallerDownButElevatorLower()
+        {
+            // arrange
+            var elevatorMock = new Mock<IElevator>();
+            elevatorMock.Setup(e => e.CurrentFloor.FloorNo).Returns(1);
+            elevatorMock.Setup(e => e.Direction).Returns(MovementDirection.Down);
+            elevatorMock.Setup(e => e.Passengers).Returns(new List<IElevatorPassenger>());
+
+            var callerFloorMock = new Mock<IFloor>();
+            callerFloorMock.Setup(f => f.FloorNo).Returns(2);
+
+            var operation = new CallOperation(new List<IElevator> { elevatorMock.Object }, callerFloorMock.Object, MovementDirection.Down);
+
+            // act
+            var result = operation.Execute();
+
+            // assert
+            Assert.Equal(elevatorMock.Object, result); // even though the elevator is going down and it's lower, it's still the closest elevator
+        }
+
+        // Test Case for when the closest elevator is going down, but the caller is going up
+        [Fact]
+        public void Execute_ReturnsClosestElevator_WhenClosestElevatorDownAndCallerUp()
+        {
+            // arrange
+            var elevatorMock = new Mock<IElevator>();
+            elevatorMock.Setup(e => e.CurrentFloor.FloorNo).Returns(1);
+            elevatorMock.Setup(e => e.Direction).Returns(MovementDirection.Down);
+            elevatorMock.Setup(e => e.Passengers).Returns(new List<IElevatorPassenger>());
+
+            var callerFloorMock = new Mock<IFloor>();
+            callerFloorMock.Setup(f => f.FloorNo).Returns(2);
+
+            var operation = new CallOperation(new List<IElevator> { elevatorMock.Object }, callerFloorMock.Object, MovementDirection.Up);
+
+            // act
+            var result = operation.Execute();
+
+            // assert
+            Assert.Equal(elevatorMock.Object, result); // even though the elevator is going down and the caller is going up, it's still the closest elevator
+        }
+
+        //// Test Case for when elevator is already full
+        //[Fact]
+        //public void Execute_ReturnsNextClosestElevator_WhenClosestElevatorIsFull()
+        //{
+        //    // arrange
+        //    var passengerMock = new Mock<IPassenger>();
+        //    passengerMock.Setup(p => p.ToFloor.FloorNo).Returns(4);
+
+        //    var elevatorMock1 = new Mock<IElevator>();
+        //    elevatorMock1.Setup(e => e.CurrentFloor.FloorNo).Returns(1);
+        //    elevatorMock1.Setup(e => e.Direction).Returns(MovementDirection.Up);
+        //    elevatorMock1.Setup(e => e.Passengers.Count).Returns(10); // assuming 10 is the maximum capacity
+        //    elevatorMock1.Setup(e => e.Passengers).Returns(new List<IElevatorPassenger>());
+
+        //    var elevatorMock2 = new Mock<IElevator>();
+        //    elevatorMock2.Setup(e => e.CurrentFloor.FloorNo).Returns(2);
+        //    elevatorMock2.Setup(e => e.Direction).Returns(MovementDirection.Up);
+        //    elevatorMock2.Setup(e => e.Passengers).Returns(new List<IElevatorPassenger>());
+
+        //    var callerFloorMock = new Mock<IFloor>();
+        //    callerFloorMock.Setup(f => f.FloorNo).Returns(2);
+
+        //    var operation = new CallOperation(new List<IElevator> { elevatorMock1.Object, elevatorMock2.Object }, callerFloorMock.Object, MovementDirection.Up);
+
+        //    // act
+        //    var result = operation.Execute();
+
+        //    // assert
+        //    Assert.Equal(elevatorMock2.Object, result); // even though the elevator1 is closer, it's full, so elevator2 is chosen
+        //}
     }
 }
