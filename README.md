@@ -32,21 +32,6 @@ before the "SmartBuilding" project.
 Upon executing the application with the configuration, the 
 "ConsoleDisplayScreen" will display the message "Waiting for connection...," 
 indicating that it is ready to establish a connection. Simultaneously, 
-the "SmartBuilding" console application will present the following prompt 
-to the user:
+the "SmartBuilding" console application will present a console menu:
 
 
-#Press #1 to create a building
-#Press #2 to exit
-
-Please select an option: 1
-
-Enter the building name:          <ENTER NAME> & <Press any key>
-Enter the total No. of basement:  <ENTER BASEMENT COUNT, GREATER OR EQUAL TO ZERO> & <Press any key>
-Enter the total No. of floor:     <ENTER FLOOR COUNT, GREATER THAN ZERO> and <Press Any Key>
-
-
-Enter the total No. of elevator: <ENTER NUMBER OF ELEVATORS> and <Press any key>
------------------------------
-Enter the elevator #1 data
------------------------------
