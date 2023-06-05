@@ -15,6 +15,9 @@ namespace SmartBuilding.Services.Elevator
         {
             _ = elevators ?? throw new ArgumentNullException(nameof(elevators));
             _ = callerFloor ?? throw new ArgumentNullException(nameof(callerFloor));
+           
+            if(!elevators.Any())
+                throw new ArgumentException("No elevator(s).");
 
             this.elevators = elevators;
             this.callerFloor = callerFloor;
@@ -29,7 +32,7 @@ namespace SmartBuilding.Services.Elevator
         {
             IElevator? closestElevator = FindClosestElevator();
 
-            _ = closestElevator ?? throw new ArgumentNullException("No closest available elevator");
+            _ = closestElevator ?? throw new ArgumentException("No closest available elevator");
 
             return closestElevator;
         }
@@ -38,13 +41,12 @@ namespace SmartBuilding.Services.Elevator
         {
             IElevator? closestElevator;
 
-            var avalableElevators = elevators.Where(i => i.Direction == MovementDirection.Idle ||
-             i.Direction == MovementDirection.Up || i.Direction == MovementDirection.Down);
+            var avalableElevators = elevators.Where(i => i.ItemStatus == ItemStatus.Available);
 
             if (!avalableElevators.Any())
-                throw new NullReferenceException("No available elevator.");
+                throw new ArgumentException("No available elevator(s).");
 
-            //if the elevator is at the caller's current floor and its in stopped state
+            //if the elevator is at the caller's current floor and its in idle state
             closestElevator = avalableElevators.FirstOrDefault(i => i.CurrentFloor.FloorNo == callerFloor.FloorNo);
             if (closestElevator != null)
                 return closestElevator;
@@ -133,14 +135,22 @@ namespace SmartBuilding.Services.Elevator
                 var near = 0; 
                 var far = 0;
 
-                var farOrder = passangers.Where(i => i.ToFloor != null);
-                if (farOrder.Any())
-                    far = farOrder.Max(i => i.ToFloor.FloorNo);
+                int farCaller = GetFarCaller(elevator);
+                int farPassanger = GetFarPassenger(elevator);
+                far = Math.Max(farCaller, farPassanger);
 
-                var nearOrder = passangers.Where(i => i.ToFloor != null);
+                int nearCaller = GetNearCaller(elevator);
+                int nearPassanger = GetNearPassenger(elevator);
+                near = Math.Min(nearCaller, nearPassanger);
 
-                if (nearOrder.Any())
-                    near = nearOrder.Min(i => i.ToFloor.FloorNo);
+                //var farOrder = passangers.Where(i => i.ToFloor != null);
+                //if (farOrder.Any())
+                //    far = farOrder.Max(i => i.ToFloor.FloorNo);
+
+                //var nearOrder = passangers.Where(i => i.ToFloor != null);
+
+                //if (nearOrder.Any())
+                //    near = nearOrder.Min(i => i.ToFloor.FloorNo);
 
                 if (elevator.Direction == MovementDirection.Up)
                 {
@@ -174,5 +184,46 @@ namespace SmartBuilding.Services.Elevator
 
             return minDistance;
         }
+
+        private int GetFarCaller(IElevator elevator)
+        {
+            int farCaller = int.MinValue;
+            var callers = elevator.Passengers.Where(i => i.ToFloor == null);
+            if (callers.Any())
+                farCaller = callers.Max(i => i.FromFloor.FloorNo);
+
+            return farCaller;
+        }
+
+        private int GetFarPassenger(IElevator elevator)
+        {
+            int farPassenger = int.MinValue;
+            var passengers = elevator.Passengers.Where(i => i.ToFloor != null);
+            if (passengers.Any())
+                farPassenger = passengers.Max(i => i.ToFloor.FloorNo);
+
+            return farPassenger;
+        }
+
+        private int GetNearCaller(IElevator elevator)
+        {
+            int nearCaller = int.MaxValue;
+            var callers = elevator.Passengers.Where(i => i.ToFloor == null);
+            if (callers.Any())
+                nearCaller = callers.Min(i => i.FromFloor.FloorNo);
+
+            return nearCaller;
+        }
+
+        private int GetNearPassenger(IElevator elevator)
+        {
+            int nearPassenger = int.MaxValue;
+            var passengers = elevator.Passengers.Where(i => i.ToFloor != null);
+            if (passengers.Any())
+                nearPassenger = passengers.Min(i => i.ToFloor.FloorNo);
+
+            return nearPassenger;
+        }
+
     }
 }

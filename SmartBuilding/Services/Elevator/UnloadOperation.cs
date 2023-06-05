@@ -11,6 +11,7 @@ namespace SmartBuilding.Services.Elevator
     {
         private readonly IElevator elevator;
         private Func<IElevatorPassenger, bool> criteria;
+        public bool HasUnloaded { get; set; }
 
         public UnloadOperation(IElevator elevator, Func<IElevatorPassenger, bool> criteria)
         {
@@ -28,6 +29,7 @@ namespace SmartBuilding.Services.Elevator
 
             if (elevator.Passengers.Any(criteria))
             {
+                HasUnloaded = true;
                 elevator.Passengers.RemoveAll(predepartingPassengers);
             }
 

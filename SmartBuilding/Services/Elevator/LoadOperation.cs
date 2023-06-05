@@ -18,6 +18,7 @@ namespace SmartBuilding.Services.Elevator
         public static event LoadEventHandler loadEvent;
         public static event MessageEventHandler messageEvent;
         public bool MaxedOut { get; set; }
+
         public LoadOperation(IElevator elevator, IEnumerable<IFloor> floors)
         {
             this.elevator = elevator;

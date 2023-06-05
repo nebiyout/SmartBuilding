@@ -72,12 +72,11 @@ namespace SmartBuilding.Services.Elevator
                         int startJobIndex = elevator.CurrentFloor.FloorNo;
                         while (startJobIndex <= farJobIndex)
                         {
+                            BroadCast();
                             OffLoadPassengers();
+                            
                             if (!maxedOut)
-                            {
                                 maxedOut = LoadPassengers();
-                                BroadCast();
-                            }
 
                             var nextFloor = floors.FirstOrDefault(i => i.FloorNo == startJobIndex + 1);
                             if (nextFloor != null && startJobIndex + 1 <= farJobIndex)
@@ -85,8 +84,6 @@ namespace SmartBuilding.Services.Elevator
 
                             startJobIndex++;
                         }
-
-                        elevator.Direction = MovementDirection.Down;
                     }
                     else if (elevator.Direction == MovementDirection.Down)
                     {
@@ -97,12 +94,11 @@ namespace SmartBuilding.Services.Elevator
                         int startJobIndex = elevator.CurrentFloor.FloorNo;
                         while (startJobIndex >= nearJobIndex)
                         {
+                            BroadCast();
                             OffLoadPassengers();
+                            
                             if (!maxedOut)
-                            {
                                 maxedOut = LoadPassengers();
-                                BroadCast();
-                            }
 
                             var prevFloor = floors.FirstOrDefault(i => i.FloorNo == startJobIndex - 1);
                             if (prevFloor != null && startJobIndex - 1 >= nearJobIndex)
@@ -110,7 +106,6 @@ namespace SmartBuilding.Services.Elevator
 
                             startJobIndex--;
                         }
-                        elevator.Direction = MovementDirection.Up;
                     }
                 }
             }
@@ -172,7 +167,11 @@ namespace SmartBuilding.Services.Elevator
             Func<IElevatorPassenger, bool> funcDepartingPassengers = i => i.ToFloor != null && i.Waiting == false
             && i.ToFloor.FloorNo == elevator.CurrentFloor.FloorNo;
 
-            new UnloadOperation(elevator, funcDepartingPassengers).Execute();
+            var unloaded = new UnloadOperation(elevator, funcDepartingPassengers);
+            unloaded.Execute();
+
+            if (unloaded.HasUnloaded)
+                BroadCast();
         }
 
         private bool LoadPassengers()
@@ -185,14 +184,38 @@ namespace SmartBuilding.Services.Elevator
 
         private void InitiateElevatorStatus()
         {
-            if (elevator.Direction == MovementDirection.Idle && elevator.Passengers.Any())
+            if (elevator.Direction == MovementDirection.Idle)
             {
-                var upperPassangers = elevator.Passengers
+                if (elevator.Passengers.Any())
+                {
+                    var upperPassangers = elevator.Passengers
                     .Where(i => i.FromFloor.FloorNo > elevator.CurrentFloor.FloorNo);
 
-                if (upperPassangers.Any())
+                    if (upperPassangers.Any())
+                        elevator.Direction = MovementDirection.Up;
+                    else
+                        elevator.Direction = MovementDirection.Down;
+                }
+            }
+            
+            if(elevator.Direction == MovementDirection.Down)
+            {
+                int nearCaller = GetNearCaller();
+                int nearPassanger = GetNearPassenger();
+
+                int nearJobIndex = Math.Min(nearCaller, nearPassanger);
+
+                if (elevator.CurrentFloor.FloorNo == floors.First().FloorNo || (nearJobIndex == int.MaxValue || nearJobIndex == elevator.CurrentFloor.FloorNo))
                     elevator.Direction = MovementDirection.Up;
-                else
+            }
+            else if(elevator.Direction ==  MovementDirection.Up)
+            {
+                int farCaller = GetFarCaller();
+                int farPassanger = GetFarPassenger();
+
+                int farJobIndex = Math.Max(farCaller, farPassanger);
+
+                if (elevator.CurrentFloor.FloorNo == floors.Last().FloorNo || (farJobIndex == int.MinValue || farJobIndex == elevator.CurrentFloor.FloorNo))
                     elevator.Direction = MovementDirection.Down;
             }
         }
