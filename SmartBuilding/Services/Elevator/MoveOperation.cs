@@ -18,7 +18,6 @@ namespace SmartBuilding.Services.Elevator
         private readonly IEnumerable<IFloor> floors;
         private readonly int minFloor;
         private readonly int maxFloor;
-        private static Object obj = new object();
 
         public MoveOperation(IElevator elevator)
         {
@@ -32,17 +31,10 @@ namespace SmartBuilding.Services.Elevator
 
         public IElevator Execute()
         {
-            RunMoveTask();
-            return elevator;
-        }
-
-
-        private void RunMoveTask()
-        {
             bool maxedOut = false;
             while (true)
             {
-                if (elevator.Passengers.All(i => i.Status ==  PassengerStatus.OnBoard) && elevator.Passengers.All(i => i.Status == PassengerStatus.OnBoard && i.ToFloor == null))
+                if (elevator.Passengers.All(i => i.Status == PassengerStatus.OnBoard) && elevator.Passengers.All(i => i.Status == PassengerStatus.OnBoard && i.ToFloor == null))
                 {
                     elevator.ResetStatus();
                     break;
@@ -101,6 +93,8 @@ namespace SmartBuilding.Services.Elevator
                     }
                 }
             }
+
+            return elevator;
         }
 
         private void BroadCast()
