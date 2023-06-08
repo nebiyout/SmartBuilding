@@ -12,6 +12,8 @@ namespace SmartBuilding.Utils
 {
     public class CommonHelper
     {
+        public record CallData(Task<IElevator> elevator, IFloor floor, MovementDirection direction);
+
         public delegate void LoadEventHandler(IElevator elevator, IList<IFloor> floors,IElevatorPassenger passenger);
 
         public delegate void MessageEventHandler(string message);

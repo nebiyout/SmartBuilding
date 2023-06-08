@@ -16,6 +16,7 @@ using System.IO;
 using System.ComponentModel;
 using System.Diagnostics;
 using static SmartBuilding.Utils.CommonHelper;
+using System.Threading.Tasks;
 
 internal class Program
 {
@@ -270,11 +271,49 @@ internal class Program
             }
         }
     }
+   
+    private static void CallElevator(IEnumerable<IElevator> elevators, IList<IFloor> floors)
+    {
+        int totalPassenger = 0;
+        bool passengerResult = false;
 
-    private static List<CallOperation> GetCallerData(IEnumerable<IElevator> elevators, int totalPassenger, IList<IFloor> floors, out bool passengerResult)
+        while (!passengerResult)
+        {
+            Console.Write("Enter the total No. of passengers: ");
+            passengerResult = int.TryParse(Console.ReadLine(), out totalPassenger);
+
+            if (!passengerResult || totalPassenger <= 0)
+                continue;
+
+            var callTasks = GetCallerData(elevators, totalPassenger, floors, out passengerResult);
+
+            var transformedTasks = callTasks.Select(async task =>
+            {
+                var result = task;
+                return await result.elevator;
+            });
+
+            Task.WhenAll(transformedTasks);
+
+            callTasks.ForEach(async callData =>
+            {
+                var passenger = new ElevatorPassenger(await callData.elevator, callData.floor, null, callData.direction);
+                var queuedElevator = new QueueOperation(await callData.elevator, passenger).Execute();
+            });
+
+            foreach (IElevator elevator in elevators)
+            {
+                if (!elevator.Passengers.Any())
+                    continue;
+                new MoveOperation(elevator).Execute();
+            }
+        }
+    }
+
+    private static List<CallData> GetCallerData(IEnumerable<IElevator> elevators, int totalPassenger, IList<IFloor> floors, out bool passengerResult)
     {
         passengerResult = false;
-        List<CallOperation> callers = new List<CallOperation>();
+        List<CallData> callers = new List<CallData>();
         MovementDirection direction = MovementDirection.Idle;
         IFloor callerFloor;
         int firstFloor = floors[0].FloorNo;
@@ -314,45 +353,14 @@ internal class Program
                 }
             }
 
-            callers.Add(new CallOperation(elevators, callerFloor, direction));
+            var call = new CallOperation(elevators, callerFloor, direction);
+            callers.Add(new CallData(call.ExecuteAsync(), callerFloor, direction));
         }
 
         if (callers.Any())
             passengerResult = true;
 
         return callers;
-    }
-
-    private static void CallElevator(IEnumerable<IElevator> elevators, IList<IFloor> floors)
-    {
-        int totalPassenger = 0;
-        bool passengerResult = false;
-
-        while (!passengerResult)
-        {
-            Console.Write("Enter the total No. of passengers: ");
-            passengerResult = int.TryParse(Console.ReadLine(), out totalPassenger);
-
-            if (!passengerResult || totalPassenger <= 0)
-                continue;
-
-            var callers = GetCallerData(elevators, totalPassenger, floors, out passengerResult);
-
-
-            callers.ForEach(call =>
-            {
-                var selectedElevator = call.Execute();
-                var passenger = new ElevatorPassenger(selectedElevator, call.CallerFloor, null, call.CallerDirection);
-                var queuedElevator = new QueueOperation(selectedElevator, passenger).Execute();
-            });
-
-            foreach (IElevator elevator in elevators)
-            {
-                if (!elevator.Passengers.Any())
-                    continue;
-                new MoveOperation(elevator).Execute();
-            }
-        }
     }
 
     private static void MovePassengers(IEnumerable<IElevator> elevators, IList<IFloor> floors)
@@ -451,3 +459,4 @@ internal class Program
         }
     }
 }
+
