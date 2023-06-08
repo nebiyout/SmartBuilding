@@ -13,7 +13,6 @@ namespace SmartBuilding.Services.Elevator
         private readonly MovementDirection callerDirection;
         private static object thisLock = new object();
 
-
         public CallOperation(IEnumerable<IElevator> elevators, IFloor callerFloor, MovementDirection callerDirection)
         {
             _ = elevators ?? throw new ArgumentNullException(nameof(elevators));

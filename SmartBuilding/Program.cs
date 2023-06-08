@@ -367,7 +367,7 @@ internal class Program
     {
         foreach (IElevator elevator in elevators)
         {
-            if (!elevator.Passengers.Any())
+            if (!elevator.Passengers.Any() || !elevator.Passengers.Any(i => i.Status == PassengerStatus.OnBoard))
                 continue;
 
             if (elevator.Passengers.Count(i => i.Status == PassengerStatus.OnBoard) > elevator.MaxPassengerLimit)
@@ -380,13 +380,11 @@ internal class Program
             int destinationFloorNo = 0;
             int firstFloor = floors[0].FloorNo;
             int lastFloor = floors[floors.Count - 1].FloorNo;
-            bool canMove = false;
 
             elevator.Passengers.ForEach(passenger =>
             {
-                if (passenger.Status ==  PassengerStatus.OnBoard)
+                if (passenger.Status == PassengerStatus.OnBoard)
                 {
-                    canMove = true;
                     Console.WriteLine();
                     Console.Write($"Enter the destination floor between({firstFloor} and {lastFloor}) for the passenger at floor No. #{passenger.FromFloor.FloorNo}: ");
                     var result = int.TryParse(Console.ReadLine(), out destinationFloorNo);
@@ -406,8 +404,7 @@ internal class Program
                 }
             });
 
-            if (canMove)
-                new MoveOperation(elevator).Execute();
+            new MoveOperation(elevator).Execute();
         }
     }
 
